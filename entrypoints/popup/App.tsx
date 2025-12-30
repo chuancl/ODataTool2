@@ -1,17 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { 
-    Button,
-    Input,
-    Tabs, 
-    Tab,
-    Card, 
-    CardBody,
-    Switch,
-    Listbox, 
-    ListboxItem,
-    ScrollShadow,
-    Divider
-} from '@heroui/react';
+import { Button } from "@nextui-org/button";
+import { Input } from "@nextui-org/input";
+import { Tabs, Tab } from "@nextui-org/tabs";
+import { Card, CardBody } from "@nextui-org/card";
+import { Switch } from "@nextui-org/switch";
+import { Listbox, ListboxItem } from "@nextui-org/listbox";
+import { ScrollShadow } from "@nextui-org/scroll-shadow";
+import { Divider } from "@nextui-org/divider";
 import { Database, FileUp, Search, Settings, Plus, Trash2, Power, ShieldCheck, Link as LinkIcon } from 'lucide-react';
 import { browser } from 'wxt/browser';
 import { AppSettings, DEFAULT_SETTINGS } from '../../types';

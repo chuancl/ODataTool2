@@ -1,16 +1,13 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { 
-    Button,
-    Input,
-    Tabs, 
-    Tab,
-    Card,
-    Tooltip,
-    Snippet,
-    Chip,
-    Spinner,
-    Divider
-} from '@heroui/react';
+import { Button } from "@nextui-org/button";
+import { Input } from "@nextui-org/input";
+import { Tabs, Tab } from "@nextui-org/tabs";
+import { Card } from "@nextui-org/card";
+import { Tooltip } from "@nextui-org/tooltip";
+import { Snippet } from "@nextui-org/snippet";
+import { Chip } from "@nextui-org/chip";
+import { Spinner } from "@nextui-org/spinner";
+import { Divider } from "@nextui-org/divider";
 import { 
     Play, 
     Copy, 

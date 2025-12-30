@@ -1,13 +1,12 @@
-import { heroui } from "@heroui/react";
+import { nextui } from "@nextui-org/react";
 
 /** @type {import('tailwindcss').Config} */
 export default {
   content: [
     "./entrypoints/**/*.{html,ts,tsx}",
     "./components/**/*.{ts,tsx}",
-    // HeroUI (NextUI) 标准配置路径
-    // 扫描 node_modules 下的 theme 包以生成样式
-    "./node_modules/@heroui/theme/dist/**/*.{js,ts,jsx,tsx}"
+    // NextUI 标准配置路径
+    "./node_modules/@nextui-org/theme/dist/**/*.{js,ts,jsx,tsx}"
   ],
   darkMode: "class",
   theme: {
@@ -17,11 +16,11 @@ export default {
         mono: ['JetBrains Mono', 'ui-monospace', 'SFMono-Regular', 'Menlo', 'Monaco', 'Consolas', 'monospace'],
       },
       colors: {
-        // 绑定 HeroUI 的 CSS 变量
-        background: "hsl(var(--heroui-background) / <alpha-value>)",
-        foreground: "hsl(var(--heroui-foreground) / <alpha-value>)",
+        // 绑定 NextUI 的 CSS 变量 (NextUI 默认使用 --nextui-background 等)
+        background: "hsl(var(--nextui-background) / <alpha-value>)",
+        foreground: "hsl(var(--nextui-foreground) / <alpha-value>)",
       }
     },
   },
-  plugins: [heroui()],
+  plugins: [nextui()],
 }

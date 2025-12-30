@@ -1,22 +1,15 @@
 import React, { useEffect, useState } from 'react';
 import ReactDOM from 'react-dom/client';
 import { browser } from 'wxt/browser';
-import { 
-    HeroUIProvider,
-    Navbar, 
-    NavbarBrand, 
-    NavbarContent, 
-    Tabs, 
-    Tab,
-    Button,
-    Spinner,
-    Card, 
-    CardBody,
-    Listbox, 
-    ListboxItem,
-    ScrollShadow,
-    Chip,
-} from '@heroui/react';
+import { NextUIProvider } from "@nextui-org/system";
+import { Navbar, NavbarBrand, NavbarContent } from "@nextui-org/navbar";
+import { Tabs, Tab } from "@nextui-org/tabs";
+import { Button } from "@nextui-org/button";
+import { Spinner } from "@nextui-org/spinner";
+import { Card, CardBody } from "@nextui-org/card";
+import { Listbox, ListboxItem } from "@nextui-org/listbox";
+import { ScrollShadow } from "@nextui-org/scroll-shadow";
+import { Chip } from "@nextui-org/chip";
 import { 
     Database, 
     RefreshCw, 
@@ -133,7 +126,7 @@ const ODataViewerApp: React.FC = () => {
   };
 
   return (
-    <HeroUIProvider>
+    <NextUIProvider>
         <div className={`flex flex-col h-screen w-full bg-background text-foreground transition-colors duration-200 overflow-hidden ${theme}`}>
         {/* 顶部导航栏 */}
         <Navbar isBordered maxWidth="full" height="3.5rem" classNames={{ wrapper: "px-4" }}>
@@ -344,7 +337,7 @@ const ODataViewerApp: React.FC = () => {
             )}
         </main>
         </div>
-    </HeroUIProvider>
+    </NextUIProvider>
   );
 };
 

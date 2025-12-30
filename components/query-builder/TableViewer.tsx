@@ -9,7 +9,8 @@ import {
     Header
 } from '@tanstack/react-table';
 import { ChevronRight, Braces, Table as TableIcon, ArrowDown, ArrowUp, ArrowUpDown } from 'lucide-react';
-import { Chip, Link } from '@heroui/react';
+import { Chip } from "@nextui-org/chip";
+import { Link } from "@nextui-org/link";
 
 // --- Cell Renderer Component ---
 
@@ -186,7 +187,7 @@ const DataTable: React.FC<DataTableProps> = ({ data, onDrillDown, columnTypes })
                                     style={{ 
                                         width: header.getSize(),
                                         // 序号列特殊处理粘性定位
-                                        ...(header.id === 'index' ? { position: 'sticky', left: 0, zIndex: 30, background: 'hsl(var(--heroui-default-100))' } : {})
+                                        ...(header.id === 'index' ? { position: 'sticky', left: 0, zIndex: 30, background: 'hsl(var(--nextui-default-100))' } : {})
                                     }}
                                     onClick={header.column.getToggleSortingHandler()}
                                 >
@@ -242,7 +243,7 @@ const DataTable: React.FC<DataTableProps> = ({ data, onDrillDown, columnTypes })
                                             position: 'sticky', 
                                             left: 0, 
                                             zIndex: 10, 
-                                            backgroundColor: 'hsl(var(--heroui-background))',
+                                            backgroundColor: 'hsl(var(--nextui-background))',
                                             borderRight: '2px solid transparent'
                                         } : {})
                                     }}

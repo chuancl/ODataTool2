@@ -3,17 +3,17 @@
 @tailwind utilities;
 
 /* 
-  HeroUI 默认变量兜底 
+  NextUI 默认变量兜底 
   防止插件加载延迟或失败导致页面透明/无样式
 */
 :root {
-  --heroui-background: 0 0% 100%;
-  --heroui-foreground: 240 10% 3.9%;
+  --nextui-background: 0 0% 100%;
+  --nextui-foreground: 240 10% 3.9%;
 }
 
 .dark {
-  --heroui-background: 240 10% 3.9%;
-  --heroui-foreground: 0 0% 98%;
+  --nextui-background: 240 10% 3.9%;
+  --nextui-foreground: 0 0% 98%;
 }
 
 body {
@@ -21,14 +21,14 @@ body {
   padding: 0;
   font-family: 'Inter', sans-serif;
   -webkit-font-smoothing: antialiased;
-  background-color: hsl(var(--heroui-background));
-  color: hsl(var(--heroui-foreground));
+  background-color: hsl(var(--nextui-background));
+  color: hsl(var(--nextui-foreground));
   min-height: 100vh;
 }
 
 /* 
-   自定义表格样式，伪装成 HeroUI 的 Table 
-   使用 HeroUI 的 CSS 变量以确保主题一致性
+   自定义表格样式，伪装成 NextUI 的 Table 
+   使用 NextUI 的 CSS 变量以确保主题一致性
 */
 .odata-table-container {
   @apply w-full h-full;
@@ -44,7 +44,7 @@ body {
 
 .odata-table th {
   @apply bg-default-100 text-foreground-500 text-tiny font-semibold uppercase px-4 py-3 text-left transition-colors relative select-none;
-  /* 模拟 HeroUI 表头边框/背景 */
+  /* 模拟 NextUI 表头边框/背景 */
   height: 40px; 
 }
 
