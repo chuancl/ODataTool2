@@ -4,30 +4,28 @@ import { vscDarkPlus, vs } from 'react-syntax-highlighter/dist/esm/styles/prism'
 
 interface JsonNodeProps {
     value: any;
+    theme: 'light' | 'dark';
 }
 
-const JsonNode: React.FC<JsonNodeProps> = ({ value }) => {
-    // 自动检测主题
-    const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
-
+const JsonNode: React.FC<JsonNodeProps> = ({ value, theme }) => {
     const jsonString = JSON.stringify(value, null, 2);
 
     return (
-        <div className="w-full h-full text-xs font-mono">
+        <div className="w-full h-full text-sm font-mono">
              <SyntaxHighlighter
                 language="json"
-                style={isDark ? vscDarkPlus : vs}
+                style={theme === 'dark' ? vscDarkPlus : vs}
                 customStyle={{
                     margin: 0,
-                    padding: '1rem',
+                    padding: '1.5rem',
                     height: '100%',
                     width: '100%',
                     backgroundColor: 'transparent', 
-                    fontSize: '12px',
+                    fontSize: '13px',
                     lineHeight: '1.5',
                 }}
-                wrapLines={false} // 禁止换行
-                wrapLongLines={false} // 强制横向滚动
+                wrapLines={false}
+                wrapLongLines={false}
             >
                 {jsonString}
             </SyntaxHighlighter>

@@ -103,7 +103,7 @@ const ODataViewerApp: React.FC = () => {
 
   return (
     <div className="flex flex-col h-screen text-main bg-app font-sans transition-colors duration-200">
-      {/* 顶部栏 - Ultra Minimal */}
+      {/* 顶部栏 */}
       <header className="bg-app/80 backdrop-blur-md border-b border-base px-6 flex items-center justify-between z-20 h-14 shrink-0 sticky top-0">
         <div className="flex items-center gap-3">
             <div className="w-8 h-8 bg-gradient-to-br from-[rgb(var(--c-accent))] to-[rgb(var(--c-accent-hover))] rounded-lg flex items-center justify-center text-white shadow-sm">
@@ -119,7 +119,6 @@ const ODataViewerApp: React.FC = () => {
             </div>
         </div>
 
-        {/* View Switcher - Segmented Control */}
         {!state.isLoading && !state.error && (
             <div className="bg-hover p-1 rounded-lg flex items-center border border-base">
                 <button 
@@ -143,14 +142,14 @@ const ODataViewerApp: React.FC = () => {
         <div className="flex items-center gap-2">
             <button 
                 onClick={cycleTheme} 
-                className="w-8 h-8 flex items-center justify-center text-muted hover:bg-hover hover:text-main rounded-md transition-all"
+                className="w-9 h-9 flex items-center justify-center text-muted hover:bg-hover hover:text-main rounded-md transition-all"
                 title="Toggle Theme"
             >
                 {theme === 'light' ? <Moon className="w-4 h-4" /> : <Sun className="w-4 h-4" />}
             </button>
             <button 
                 onClick={() => window.location.reload()} 
-                className="w-8 h-8 flex items-center justify-center text-muted hover:bg-hover hover:text-main rounded-md transition-all"
+                className="w-9 h-9 flex items-center justify-center text-muted hover:bg-hover hover:text-main rounded-md transition-all"
                 title="Refresh"
             >
                 <RefreshCw className="w-4 h-4" />
@@ -184,24 +183,24 @@ const ODataViewerApp: React.FC = () => {
             <>
                 {viewMode === 'details' ? (
                      <div className="flex w-full h-full overflow-hidden">
-                        {/* 左侧列表 - Modern Navigation Sidebar */}
+                        {/* 左侧列表 */}
                         <div className="w-64 bg-sidebar border-r border-base overflow-y-auto flex flex-col shrink-0 custom-scrollbar">
-                            <div className="px-4 py-3 text-[10px] font-bold text-muted uppercase tracking-wider sticky top-0 bg-sidebar/95 backdrop-blur-sm z-10 flex justify-between items-center">
+                            <div className="px-4 py-3 text-[10px] font-bold text-muted uppercase tracking-wider sticky top-0 bg-sidebar/95 backdrop-blur-sm z-10 flex justify-between items-center border-b border-base/50">
                                 Entities
-                                <span className="bg-base px-1.5 rounded text-sec">{state.schema.entities.length}</span>
+                                <span className="bg-base px-1.5 rounded text-sec border border-base">{state.schema.entities.length}</span>
                             </div>
-                            <div className="px-2 pb-4 space-y-0.5">
+                            <div className="px-2 py-2 space-y-0.5">
                                 {state.schema.entities.map((entity, idx) => (
                                     <button
                                         key={idx}
                                         onClick={() => setSelectedEntity(entity.name)}
-                                        className={`w-full text-left px-3 py-2 rounded-md flex items-center gap-3 transition-all text-xs group ${
+                                        className={`w-full text-left px-3 py-2.5 rounded-md flex items-center gap-3 transition-all text-sm group ${
                                             selectedEntity === entity.name 
-                                            ? 'bg-white dark:bg-white/10 text-main shadow-sm font-semibold' 
+                                            ? 'bg-white dark:bg-white/10 text-main shadow-sm font-semibold border border-base/50' 
                                             : 'text-sec hover:bg-hover hover:text-main'
                                         }`}
                                     >
-                                        <Box className={`w-3.5 h-3.5 ${selectedEntity === entity.name ? 'text-[rgb(var(--c-accent))]' : 'text-muted group-hover:text-sec'}`} />
+                                        <Box className={`w-4 h-4 ${selectedEntity === entity.name ? 'text-[rgb(var(--c-accent))]' : 'text-muted group-hover:text-sec'}`} />
                                         <span className="truncate">{entity.name}</span>
                                     </button>
                                 ))}
@@ -221,7 +220,7 @@ const ODataViewerApp: React.FC = () => {
                                             <h2 className="text-3xl font-bold text-main tracking-tight">{currentEntity.name}</h2>
                                             <div className="flex gap-2">
                                                 {currentEntity.keys.map(k => (
-                                                    <span key={k} className="bg-[rgb(var(--c-accent))]/10 text-[rgb(var(--c-accent))] text-[10px] px-2 py-1 rounded-md font-bold uppercase border border-[rgb(var(--c-accent))]/20">
+                                                    <span key={k} className="bg-[rgb(var(--c-accent))]/10 text-[rgb(var(--c-accent))] text-[11px] px-2 py-1 rounded-md font-bold uppercase border border-[rgb(var(--c-accent))]/20">
                                                         PK: {k}
                                                     </span>
                                                 ))}
@@ -233,11 +232,11 @@ const ODataViewerApp: React.FC = () => {
                                         {/* Properties */}
                                         <div className="lg:col-span-2">
                                             <h3 className="text-xs font-bold text-muted uppercase tracking-wider mb-4 flex items-center gap-2">
-                                                <Code className="w-3.5 h-3.5" /> Properties
+                                                <Code className="w-4 h-4" /> Properties
                                             </h3>
                                             <div className="bg-panel rounded-xl border border-base shadow-sm overflow-hidden">
-                                                <table className="w-full text-xs text-left">
-                                                    <thead className="bg-hover/50 text-muted border-b border-base">
+                                                <table className="w-full text-sm text-left odata-table">
+                                                    <thead>
                                                         <tr>
                                                             <th className="px-5 py-3 font-semibold w-1/3">Name</th>
                                                             <th className="px-5 py-3 font-semibold w-1/3">Type</th>
@@ -262,13 +261,13 @@ const ODataViewerApp: React.FC = () => {
                                         {/* Relations */}
                                         <div>
                                             <h3 className="text-xs font-bold text-muted uppercase tracking-wider mb-4 flex items-center gap-2">
-                                                <ArrowRight className="w-3.5 h-3.5" /> Navigation
+                                                <ArrowRight className="w-4 h-4" /> Navigation
                                             </h3>
                                             <div className="space-y-2">
                                                 {currentEntity.navigationProperties.map((nav, i) => (
                                                     <div key={i} className="p-3 bg-panel rounded-lg border border-base flex flex-col gap-1 hover:border-[rgb(var(--c-accent))] transition-colors group cursor-default shadow-sm">
-                                                        <span className="font-semibold text-main text-xs group-hover:text-[rgb(var(--c-accent))] transition-colors">{nav.name}</span>
-                                                        <div className="flex items-center gap-1.5 text-[10px] text-muted font-mono">
+                                                        <span className="font-semibold text-main text-sm group-hover:text-[rgb(var(--c-accent))] transition-colors">{nav.name}</span>
+                                                        <div className="flex items-center gap-1.5 text-[11px] text-muted font-mono">
                                                             <ArrowRight className="w-3 h-3 opacity-50" />
                                                             <span className="truncate">{nav.type}</span>
                                                         </div>
@@ -295,7 +294,7 @@ const ODataViewerApp: React.FC = () => {
                     </div>
                 ) : (
                     <div className="w-full h-full relative overflow-hidden">
-                        <QueryBuilder schema={state.schema} metadataUrl={state.url || ''} />
+                        <QueryBuilder schema={state.schema} metadataUrl={state.url || ''} theme={theme} />
                     </div>
                 )}
             </>

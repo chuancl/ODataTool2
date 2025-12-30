@@ -3,8 +3,12 @@ import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { vscDarkPlus, vs } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import format from 'xml-formatter';
 
-const XmlViewer: React.FC<{ xmlString: string }> = ({ xmlString }) => {
-    const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+interface XmlViewerProps {
+    xmlString: string;
+    theme: 'light' | 'dark';
+}
+
+const XmlViewer: React.FC<XmlViewerProps> = ({ xmlString, theme }) => {
     
     const formattedXml = useMemo(() => {
         try {
@@ -14,23 +18,22 @@ const XmlViewer: React.FC<{ xmlString: string }> = ({ xmlString }) => {
                 lineSeparator: '\n'
             });
         } catch (e) {
-            // 如果格式化失败（例如 XML 不完整），回退到原始字符串
             return xmlString;
         }
     }, [xmlString]);
 
     return (
-        <div className="w-full h-full text-xs font-mono">
+        <div className="w-full h-full text-sm font-mono">
              <SyntaxHighlighter
                 language="xml"
-                style={isDark ? vscDarkPlus : vs}
+                style={theme === 'dark' ? vscDarkPlus : vs}
                 customStyle={{
                     margin: 0,
-                    padding: '1rem',
+                    padding: '1.5rem',
                     height: '100%',
                     width: '100%',
                     backgroundColor: 'transparent',
-                    fontSize: '12px',
+                    fontSize: '13px',
                     lineHeight: '1.5',
                 }}
                 wrapLines={false}

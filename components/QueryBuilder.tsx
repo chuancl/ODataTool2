@@ -10,11 +10,12 @@ import DataTable from './query-builder/TableViewer';
 interface QueryBuilderProps {
   schema: ODataSchema;
   metadataUrl: string;
+  theme: 'light' | 'dark';
 }
 
 type TabType = 'table' | 'json' | 'xml';
 
-const QueryBuilder: React.FC<QueryBuilderProps> = ({ schema, metadataUrl }) => {
+const QueryBuilder: React.FC<QueryBuilderProps> = ({ schema, metadataUrl, theme }) => {
   const serviceRoot = useMemo(() => {
     return metadataUrl.replace(/\/\$metadata$/, '').replace(/\/$/, '');
   }, [metadataUrl]);
@@ -167,7 +168,7 @@ const QueryBuilder: React.FC<QueryBuilderProps> = ({ schema, metadataUrl }) => {
   const TabButton = ({ id, label, icon: Icon }: { id: TabType, label: string, icon: any }) => (
       <button 
         onClick={() => setActiveTab(id)}
-        className={`relative flex items-center gap-2 px-4 py-2 text-sm font-medium transition-colors ${
+        className={`relative flex items-center gap-2 px-4 py-2.5 text-sm font-medium transition-colors ${
             activeTab === id 
             ? 'text-main' 
             : 'text-muted hover:text-sec'
@@ -197,19 +198,18 @@ const QueryBuilder: React.FC<QueryBuilderProps> = ({ schema, metadataUrl }) => {
         {/* Right Main Content */}
         <div className="flex-1 flex flex-col min-w-0 bg-app relative z-0">
             
-            {/* Top Toolbar - Floating style */}
-            <div className="h-16 shrink-0 flex items-center px-4 gap-3 bg-app/80 backdrop-blur-sm sticky top-0 z-10">
+            {/* Top Toolbar */}
+            <div className="h-16 shrink-0 flex items-center px-4 gap-3 bg-app/80 backdrop-blur-sm sticky top-0 z-10 border-b border-base">
                 <button 
                     onClick={() => setShowConfig(!showConfig)}
                     className="p-2 rounded-lg text-muted hover:bg-hover hover:text-main transition-colors"
-                    title={showConfig ? "隐藏侧栏" : "显示侧栏"}
                 >
                     {showConfig ? <PanelLeftClose className="w-5 h-5" /> : <PanelLeftOpen className="w-5 h-5" />}
                 </button>
 
-                {/* URL Input Bar - Modern Pill Shape */}
+                {/* URL Input Bar */}
                 <div className="flex-1 h-10 bg-sidebar border border-base rounded-lg flex items-center px-3 relative transition-all focus-within:ring-2 focus-within:ring-[rgb(var(--c-accent))]/20 focus-within:border-[rgb(var(--c-accent))]">
-                    <div className="bg-[rgb(var(--c-accent))]/10 text-[rgb(var(--c-accent))] px-1.5 py-0.5 rounded text-[10px] font-bold mr-2 tracking-wide select-none">GET</div>
+                    <div className="bg-[rgb(var(--c-accent))]/10 text-[rgb(var(--c-accent))] px-1.5 py-0.5 rounded text-[11px] font-bold mr-2 tracking-wide select-none">GET</div>
                     <input 
                         value={urlInput}
                         onChange={handleUrlInputChange}
@@ -228,7 +228,7 @@ const QueryBuilder: React.FC<QueryBuilderProps> = ({ schema, metadataUrl }) => {
                     </div>
                 </div>
 
-                {/* Run Button - Prominent */}
+                {/* Run Button */}
                 <button 
                     onClick={() => executeQuery()}
                     disabled={loading || !urlInput}
@@ -240,11 +240,11 @@ const QueryBuilder: React.FC<QueryBuilderProps> = ({ schema, metadataUrl }) => {
             </div>
 
             {/* Content Area */}
-            <div className="flex-1 flex flex-col overflow-hidden px-4 pb-4">
+            <div className="flex-1 flex flex-col overflow-hidden px-4 pb-4 pt-2">
                 <div className="flex-1 w-full flex flex-col overflow-hidden relative rounded-xl border border-base bg-app shadow-sm">
                     
                     {/* Tabs Header */}
-                    <div className="h-11 border-b border-base flex items-center px-2 justify-between bg-app shrink-0">
+                    <div className="h-12 border-b border-base flex items-center px-2 justify-between bg-app shrink-0">
                         <div className="flex items-center">
                             <TabButton id="table" label="Table" icon={TableIcon} />
                             <TabButton id="json" label="JSON" icon={FileJson} />
@@ -270,7 +270,7 @@ const QueryBuilder: React.FC<QueryBuilderProps> = ({ schema, metadataUrl }) => {
 
                         {!resultData && !resultXml && !loading && !error && (
                             <div className="absolute inset-0 flex flex-col items-center justify-center text-muted select-none">
-                                <div className="w-16 h-16 rounded-2xl bg-sidebar flex items-center justify-center mb-4">
+                                <div className="w-16 h-16 rounded-2xl bg-sidebar flex items-center justify-center mb-4 border border-base">
                                     <Settings2 className="w-8 h-8 opacity-40" />
                                 </div>
                                 <p className="text-sm font-medium">配置参数并点击运行</p>
@@ -278,9 +278,9 @@ const QueryBuilder: React.FC<QueryBuilderProps> = ({ schema, metadataUrl }) => {
                         )}
 
                         <div className="w-full h-full overflow-hidden">
-                            {activeTab === 'json' && resultData && <div className="h-full w-full bg-[rgb(var(--c-bg-sidebar))]"><JsonNode value={resultData} /></div>}
+                            {activeTab === 'json' && resultData && <div className="h-full w-full bg-[rgb(var(--c-bg-sidebar))]"><JsonNode value={resultData} theme={theme} /></div>}
                             
-                            {activeTab === 'xml' && resultXml && <div className="h-full w-full bg-[rgb(var(--c-bg-sidebar))]"><XmlViewer xmlString={resultXml} /></div>}
+                            {activeTab === 'xml' && resultXml && <div className="h-full w-full bg-[rgb(var(--c-bg-sidebar))]"><XmlViewer xmlString={resultXml} theme={theme} /></div>}
                             
                             {activeTab === 'table' && resultData && (
                                 <div className="h-full flex flex-col">
