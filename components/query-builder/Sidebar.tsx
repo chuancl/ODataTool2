@@ -1,5 +1,5 @@
 import React from 'react';
-import { ChevronDown, Database, LayoutGrid, Layers, Filter, ArrowUpDown, Hash } from 'lucide-react';
+import { ChevronDown, Database, LayoutGrid, Layers, Filter, ArrowUpDown, Hash, Check } from 'lucide-react';
 import { ODataSchema, ODataEntity } from '../../types';
 
 interface SidebarProps {
@@ -26,9 +26,9 @@ interface SidebarProps {
 }
 
 const ConfigSection: React.FC<{ title: string; icon: any; children: React.ReactNode }> = ({ title, icon: Icon, children }) => (
-    <div className="mb-4">
-        <h3 className="text-[10px] font-bold text-[var(--text-muted)] uppercase tracking-wider mb-2 flex items-center gap-1.5">
-            <Icon className="w-3 h-3" /> {title}
+    <div className="mb-6">
+        <h3 className="text-[11px] font-bold text-muted uppercase tracking-wider mb-3 flex items-center gap-1.5 select-none">
+            <Icon className="w-3.5 h-3.5" /> {title}
         </h3>
         <div className="pl-1">{children}</div>
     </div>
@@ -54,42 +54,45 @@ const Sidebar: React.FC<SidebarProps> = ({
     };
 
     return (
-        <div className="flex flex-col h-full overflow-y-auto custom-scrollbar p-3">
-            {/* Entity Select */}
-            <div className="mb-4">
-                <label className="text-[10px] font-bold text-[var(--text-muted)] uppercase tracking-wider mb-1.5 block">Entity Set</label>
-                <div className="relative">
+        <div className="flex flex-col h-full overflow-y-auto custom-scrollbar p-4 space-y-1">
+            {/* Entity Select - Highlighted */}
+            <div className="mb-6">
+                <label className="text-[10px] font-bold text-muted uppercase tracking-wider mb-2 block">Target Entity</label>
+                <div className="relative group">
                     <select 
                         value={selectedSet} 
                         onChange={e => onSetChange(e.target.value)}
-                        className="w-full pl-3 pr-8 py-2 bg-[var(--bg-input)] border border-[var(--border-color)] rounded text-xs font-medium text-[var(--text-primary)] focus:border-[var(--accent-color)] outline-none appearance-none"
+                        className="w-full pl-3 pr-8 py-2.5 bg-hover border border-transparent rounded-lg text-sm font-semibold text-main focus:bg-app focus:border-[rgb(var(--c-accent))] outline-none appearance-none transition-all cursor-pointer shadow-sm"
                     >
                         {schema.entitySets.map(s => (
                             <option key={s.name} value={s.name}>{s.name}</option>
                         ))}
                     </select>
-                    <ChevronDown className="absolute right-2.5 top-2.5 w-3.5 h-3.5 text-[var(--text-muted)] pointer-events-none" />
+                    <ChevronDown className="absolute right-3 top-3 w-4 h-4 text-muted pointer-events-none group-hover:text-main transition-colors" />
                 </div>
             </div>
 
-            <div className="h-px bg-[var(--border-color)] mb-4"></div>
-
             {currentEntity ? (
-                <div className="space-y-5">
+                <>
                     {/* Columns */}
-                    <ConfigSection title="Columns ($select)" icon={LayoutGrid}>
-                         <div className="max-h-40 overflow-y-auto border border-[var(--border-color)] rounded bg-[var(--bg-input)] p-1 space-y-0.5 custom-scrollbar">
+                    <ConfigSection title="Columns" icon={LayoutGrid}>
+                         <div className="max-h-[200px] overflow-y-auto custom-scrollbar -ml-1 pr-1 space-y-0.5">
                             {currentEntity.properties.map(p => (
-                                <label key={p.name} className={`flex items-center gap-2 px-2 py-1.5 rounded cursor-pointer transition-colors ${selectedProps.has(p.name) ? 'bg-[var(--accent-bg)]' : 'hover:bg-[var(--bg-app)]'}`}>
+                                <label key={p.name} className={`group flex items-center justify-between px-2 py-1.5 rounded-md cursor-pointer transition-all ${selectedProps.has(p.name) ? 'bg-[rgb(var(--c-accent-subtle))]' : 'hover:bg-hover'}`}>
+                                    <div className="flex items-center gap-2 overflow-hidden">
+                                        <div className={`w-3.5 h-3.5 rounded border flex items-center justify-center transition-colors ${selectedProps.has(p.name) ? 'bg-[rgb(var(--c-accent))] border-[rgb(var(--c-accent))]' : 'border-muted bg-app group-hover:border-sec'}`}>
+                                            {selectedProps.has(p.name) && <Check className="w-2.5 h-2.5 text-white" />}
+                                        </div>
+                                        <span className={`text-xs truncate select-none ${selectedProps.has(p.name) ? 'text-main font-medium' : 'text-sec'}`}>
+                                            {p.name}
+                                        </span>
+                                    </div>
                                     <input 
                                         type="checkbox" 
-                                        className="w-3.5 h-3.5 rounded text-[var(--accent-color)] border-[var(--border-color)] focus:ring-[var(--accent-color)]"
+                                        className="hidden"
                                         checked={selectedProps.has(p.name)}
                                         onChange={() => toggleSelection(selectedProps, p.name, onPropChange)}
                                     />
-                                    <span className={`text-xs truncate ${selectedProps.has(p.name) ? 'text-[var(--accent-color)] font-medium' : 'text-[var(--text-secondary)]'}`}>
-                                        {p.name}
-                                    </span>
                                 </label>
                             ))}
                         </div>
@@ -97,15 +100,13 @@ const Sidebar: React.FC<SidebarProps> = ({
 
                     {/* Expand */}
                     {currentEntity.navigationProperties.length > 0 && (
-                        <ConfigSection title="Relations ($expand)" icon={Layers}>
+                        <ConfigSection title="Relations" icon={Layers}>
                             <div className="space-y-1">
                                 {currentEntity.navigationProperties.map(np => (
-                                    <label key={np.name} className={`flex items-center gap-2 px-2 py-1.5 rounded cursor-pointer border transition-all ${expandProps.has(np.name) ? 'bg-[var(--accent-bg)] border-[var(--accent-color)]/30' : 'bg-[var(--bg-input)] border-[var(--border-color)] hover:border-[var(--accent-color)]/50'}`}>
+                                    <label key={np.name} className={`group flex items-center justify-between px-2 py-1.5 rounded-md cursor-pointer border transition-all ${expandProps.has(np.name) ? 'bg-[rgb(var(--c-accent-subtle))] border-[rgb(var(--c-accent))]/30' : 'bg-app border-base hover:border-[rgb(var(--c-accent))]'}`}>
+                                        <span className={`text-xs select-none ${expandProps.has(np.name) ? 'text-[rgb(var(--c-accent))] font-medium' : 'text-sec'}`}>{np.name}</span>
                                         <input type="checkbox" className="hidden" checked={expandProps.has(np.name)} onChange={() => toggleSelection(expandProps, np.name, onExpandChange)} />
-                                        <div className={`w-3 h-3 rounded-full border flex items-center justify-center ${expandProps.has(np.name) ? 'border-[var(--accent-color)] bg-[var(--accent-color)]' : 'border-[var(--text-muted)]'}`}>
-                                            {expandProps.has(np.name) && <div className="w-1 h-1 bg-white rounded-full"/>}
-                                        </div>
-                                        <span className={`text-xs ${expandProps.has(np.name) ? 'text-[var(--accent-color)] font-medium' : 'text-[var(--text-secondary)]'}`}>{np.name}</span>
+                                        <div className={`w-2 h-2 rounded-full transition-colors ${expandProps.has(np.name) ? 'bg-[rgb(var(--c-accent))]' : 'bg-base'}`} />
                                     </label>
                                 ))}
                             </div>
@@ -113,32 +114,35 @@ const Sidebar: React.FC<SidebarProps> = ({
                     )}
 
                     {/* Filter */}
-                    <ConfigSection title="Filter ($filter)" icon={Filter}>
-                        <input 
-                            type="text" 
-                            placeholder="e.g. Price gt 20" 
-                            className="w-full px-3 py-2 bg-[var(--bg-input)] border border-[var(--border-color)] rounded text-xs focus:border-[var(--accent-color)] outline-none text-[var(--text-primary)] placeholder-[var(--text-muted)]"
-                            value={filter}
-                            onChange={e => onFilterChange(e.target.value)}
-                        />
+                    <ConfigSection title="Filter" icon={Filter}>
+                        <div className="relative">
+                            <input 
+                                type="text" 
+                                placeholder="Price gt 20" 
+                                className="w-full px-3 py-2 bg-hover border border-transparent rounded-md text-xs focus:bg-app focus:border-[rgb(var(--c-accent))] focus:ring-1 focus:ring-[rgb(var(--c-accent))] outline-none text-main placeholder-muted transition-all"
+                                value={filter}
+                                onChange={e => onFilterChange(e.target.value)}
+                            />
+                        </div>
                     </ConfigSection>
 
                     {/* Sort */}
-                    <ConfigSection title="Sort ($orderby)" icon={ArrowUpDown}>
+                    <ConfigSection title="Sort By" icon={ArrowUpDown}>
                         <div className="flex gap-2">
                              <div className="relative flex-1">
                                 <select 
-                                    className="w-full px-2 py-2 bg-[var(--bg-input)] border border-[var(--border-color)] rounded text-xs appearance-none focus:border-[var(--accent-color)] outline-none text-[var(--text-primary)]"
+                                    className="w-full px-2 py-2 bg-hover border border-transparent rounded-md text-xs appearance-none focus:bg-app focus:border-[rgb(var(--c-accent))] outline-none text-main cursor-pointer"
                                     value={orderBy}
                                     onChange={e => onOrderByChange(e.target.value)}
                                 >
-                                    <option value="">(None)</option>
+                                    <option value="">(Default)</option>
                                     {currentEntity.properties.map(p => <option key={p.name} value={p.name}>{p.name}</option>)}
                                 </select>
+                                <ChevronDown className="absolute right-2 top-2.5 w-3 h-3 text-muted pointer-events-none" />
                             </div>
                             <button 
                                 onClick={() => onOrderByDirChange(orderByDir === 'asc' ? 'desc' : 'asc')}
-                                className="px-2 py-1 border border-[var(--border-color)] rounded bg-[var(--bg-input)] hover:bg-[var(--bg-app)] text-[var(--text-secondary)] text-[10px] font-bold uppercase w-12"
+                                className="px-2 py-1 border border-base rounded-md bg-app hover:bg-hover text-sec text-[10px] font-bold uppercase w-12 transition-colors"
                             >
                                 {orderByDir}
                             </button>
@@ -146,42 +150,48 @@ const Sidebar: React.FC<SidebarProps> = ({
                     </ConfigSection>
 
                     {/* Pagination */}
-                    <ConfigSection title="Pagination" icon={Hash}>
-                        <div className="grid grid-cols-2 gap-2 mb-3">
+                    <ConfigSection title="Limit / Skip" icon={Hash}>
+                        <div className="grid grid-cols-2 gap-3 mb-3">
                             <div>
-                                <label className="text-[9px] text-[var(--text-muted)] block mb-1">Top</label>
                                 <input 
                                     type="number" 
-                                    className="w-full px-2 py-1.5 bg-[var(--bg-input)] border border-[var(--border-color)] rounded text-xs focus:border-[var(--accent-color)] outline-none"
+                                    className="w-full px-2 py-1.5 bg-hover border border-transparent rounded-md text-xs focus:bg-app focus:border-[rgb(var(--c-accent))] outline-none text-center font-mono"
                                     placeholder="All"
                                     value={top}
                                     onChange={e => onTopChange(e.target.value ? Number(e.target.value) : '')}
                                 />
+                                <div className="text-[9px] text-muted text-center mt-1">Top</div>
                             </div>
                             <div>
-                                <label className="text-[9px] text-[var(--text-muted)] block mb-1">Skip</label>
                                 <input 
                                     type="number" 
-                                    className="w-full px-2 py-1.5 bg-[var(--bg-input)] border border-[var(--border-color)] rounded text-xs focus:border-[var(--accent-color)] outline-none"
+                                    className="w-full px-2 py-1.5 bg-hover border border-transparent rounded-md text-xs focus:bg-app focus:border-[rgb(var(--c-accent))] outline-none text-center font-mono"
                                     placeholder="0"
                                     value={skip}
                                     onChange={e => onSkipChange(e.target.value ? Number(e.target.value) : '')}
                                 />
+                                <div className="text-[9px] text-muted text-center mt-1">Skip</div>
                             </div>
                         </div>
-                        <label className="flex items-center gap-2 cursor-pointer select-none">
+                        <label className="flex items-center gap-2 cursor-pointer select-none p-2 rounded-md hover:bg-hover transition-colors">
+                            <div className={`w-4 h-4 rounded border flex items-center justify-center transition-colors ${count ? 'bg-[rgb(var(--c-accent))] border-[rgb(var(--c-accent))]' : 'border-muted bg-app'}`}>
+                                {count && <Check className="w-3 h-3 text-white" />}
+                            </div>
                             <input 
                                 type="checkbox" 
                                 checked={count} 
                                 onChange={e => onCountChange(e.target.checked)} 
-                                className="w-3.5 h-3.5 rounded text-[var(--accent-color)] focus:ring-[var(--accent-color)]" 
+                                className="hidden" 
                             />
-                            <span className="text-xs text-[var(--text-secondary)]">Include $count</span>
+                            <span className="text-xs text-sec">Include Count ($inlinecount)</span>
                         </label>
                     </ConfigSection>
-                </div>
+                </>
             ) : (
-                <div className="text-center text-[var(--text-muted)] text-xs mt-10">Select an entity set</div>
+                <div className="flex flex-col items-center justify-center py-10 opacity-50">
+                    <Database className="w-8 h-8 mb-2 stroke-1" />
+                    <div className="text-center text-muted text-xs">No Entity Selected</div>
+                </div>
             )}
         </div>
     );

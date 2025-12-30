@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import ReactDOM from 'react-dom/client';
 import { browser } from 'wxt/browser';
-import { Layers, ArrowRight, RefreshCw, Code, Database, AlertCircle, List, Wand2, Moon, Sun } from 'lucide-react';
+import { Layers, ArrowRight, RefreshCw, Code, Database, AlertCircle, List, Wand2, Moon, Sun, Box } from 'lucide-react';
 import { ViewerState } from '../../types';
 import { parseODataMetadata, inferMetadataUrl } from '../../services/odataService';
 import QueryBuilder from '../../components/QueryBuilder';
@@ -22,6 +22,8 @@ const ODataViewerApp: React.FC = () => {
     const savedTheme = localStorage.getItem('odata-viewer-theme') as Theme;
     if (savedTheme && (savedTheme === 'light' || savedTheme === 'dark')) {
         setTheme(savedTheme);
+    } else if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+        setTheme('dark');
     }
     init();
   }, []);
@@ -100,78 +102,80 @@ const ODataViewerApp: React.FC = () => {
   };
 
   return (
-    <div className="flex flex-col h-screen text-text-main bg-canvas font-sans transition-all duration-300">
-      {/* 顶部栏 */}
-      <header className="bg-surface/80 backdrop-blur-xl border-b border-border px-8 flex items-center justify-between shadow-sm z-10 h-16 shrink-0">
-        <div className="flex items-center gap-4">
-            <div className="bg-brand w-10 h-10 flex items-center justify-center rounded-xl text-brand-fg shadow-lg shadow-indigo-500/20">
-                <Database className="w-5 h-5" />
+    <div className="flex flex-col h-screen text-main bg-app font-sans transition-colors duration-200">
+      {/* 顶部栏 - Ultra Minimal */}
+      <header className="bg-app/80 backdrop-blur-md border-b border-base px-6 flex items-center justify-between z-20 h-14 shrink-0 sticky top-0">
+        <div className="flex items-center gap-3">
+            <div className="w-8 h-8 bg-gradient-to-br from-[rgb(var(--c-accent))] to-[rgb(var(--c-accent-hover))] rounded-lg flex items-center justify-center text-white shadow-sm">
+                <Database className="w-4 h-4" />
             </div>
-            <div className="overflow-hidden">
-                <h1 className="font-extrabold text-lg tracking-tight text-text-main">OData Visualizer</h1>
-                <div className="flex items-center gap-2">
-                    <span className="text-[10px] px-1.5 py-0.5 rounded-md bg-brand/10 text-brand font-bold uppercase tracking-widest">Metadata</span>
-                    <p className="text-[10px] text-text-muted truncate max-w-md font-mono opacity-60" title={state.url}>
-                        {state.url || 'Local Metadata File'}
+            <div className="flex flex-col justify-center">
+                <h1 className="font-bold text-sm tracking-tight text-main leading-none mb-1">OData Visualizer</h1>
+                {state.url && (
+                    <p className="text-[10px] text-muted font-mono truncate max-w-xs opacity-80 leading-none">
+                        {state.url.replace(/^https?:\/\//, '')}
                     </p>
-                </div>
+                )}
             </div>
         </div>
 
-        {/* View Switcher - 现代切换器 */}
+        {/* View Switcher - Segmented Control */}
         {!state.isLoading && !state.error && (
-            <div className="bg-surface-hover p-1 rounded-xl flex items-center border border-border/50">
+            <div className="bg-hover p-1 rounded-lg flex items-center border border-base">
                 <button 
                     onClick={() => setViewMode('details')}
-                    className={`flex items-center gap-2 px-5 py-2 rounded-lg text-xs font-bold transition-all ${viewMode === 'details' ? 'bg-surface text-brand shadow-sm scale-[1.02]' : 'text-text-muted hover:text-text-main'}`}
+                    className={`flex items-center gap-2 px-4 py-1.5 rounded-md text-xs font-semibold transition-all ${viewMode === 'details' ? 'bg-app text-main shadow-sm' : 'text-muted hover:text-sec'}`}
                 >
-                    <List className="w-4 h-4" />
-                    Schema 视图
+                    <List className="w-3.5 h-3.5" />
+                    Schema
                 </button>
+                <div className="w-px h-4 bg-base mx-1 opacity-50"></div>
                 <button 
                     onClick={() => setViewMode('query')}
-                    className={`flex items-center gap-2 px-5 py-2 rounded-lg text-xs font-bold transition-all ${viewMode === 'query' ? 'bg-surface text-brand shadow-sm scale-[1.02]' : 'text-text-muted hover:text-text-main'}`}
+                    className={`flex items-center gap-2 px-4 py-1.5 rounded-md text-xs font-semibold transition-all ${viewMode === 'query' ? 'bg-app text-main shadow-sm' : 'text-muted hover:text-sec'}`}
                 >
-                    <Wand2 className="w-4 h-4" />
-                    查询构建
+                    <Wand2 className="w-3.5 h-3.5" />
+                    Explorer
                 </button>
             </div>
         )}
 
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2">
             <button 
                 onClick={cycleTheme} 
-                className="w-10 h-10 flex items-center justify-center text-text-muted hover:bg-surface-hover hover:text-brand rounded-xl transition-all border border-transparent hover:border-border"
+                className="w-8 h-8 flex items-center justify-center text-muted hover:bg-hover hover:text-main rounded-md transition-all"
+                title="Toggle Theme"
             >
-                {theme === 'light' ? <Moon className="w-5 h-5" /> : <Sun className="w-5 h-5" />}
+                {theme === 'light' ? <Moon className="w-4 h-4" /> : <Sun className="w-4 h-4" />}
             </button>
             <button 
                 onClick={() => window.location.reload()} 
-                className="w-10 h-10 flex items-center justify-center text-text-muted hover:bg-surface-hover hover:text-brand rounded-xl transition-all border border-transparent hover:border-border"
+                className="w-8 h-8 flex items-center justify-center text-muted hover:bg-hover hover:text-main rounded-md transition-all"
+                title="Refresh"
             >
-                <RefreshCw className="w-5 h-5" />
+                <RefreshCw className="w-4 h-4" />
             </button>
         </div>
       </header>
 
       {/* 主体内容 */}
-      <div className="flex-1 flex flex-col overflow-hidden relative w-full h-full">
+      <div className="flex-1 flex flex-col overflow-hidden relative w-full h-full bg-app">
         {state.isLoading && (
-            <div className="absolute inset-0 flex flex-col items-center justify-center text-text-muted bg-canvas z-20">
-                <div className="w-10 h-10 border-4 border-surface-hover rounded-full border-t-brand animate-spin mb-4"></div>
-                <p className="font-bold text-xs tracking-widest uppercase opacity-60">解析中...</p>
+            <div className="absolute inset-0 flex flex-col items-center justify-center text-muted bg-app z-30">
+                <div className="w-8 h-8 border-2 border-hover rounded-full border-t-[rgb(var(--c-accent))] animate-spin mb-4"></div>
+                <p className="font-medium text-xs tracking-wider opacity-60">LOADING METADATA...</p>
             </div>
         )}
 
         {state.error && (
-             <div className="w-full h-full flex flex-col items-center justify-center p-8 bg-canvas">
-                <div className="bg-surface p-10 rounded-3xl shadow-2xl border border-red-500/10 max-w-lg w-full text-center">
-                    <div className="w-16 h-16 bg-red-500/10 text-red-500 rounded-2xl flex items-center justify-center mx-auto mb-6">
-                        <AlertCircle className="w-8 h-8" />
+             <div className="w-full h-full flex flex-col items-center justify-center p-8 bg-app">
+                <div className="bg-panel p-8 rounded-2xl shadow-xl border border-base max-w-md w-full text-center">
+                    <div className="w-12 h-12 bg-red-100 dark:bg-red-900/30 text-red-500 rounded-xl flex items-center justify-center mx-auto mb-4">
+                        <AlertCircle className="w-6 h-6" />
                     </div>
-                    <h2 className="font-black text-xl text-text-main mb-3">发生了错误</h2>
-                    <p className="text-text-muted mb-8 text-sm leading-relaxed">{state.error}</p>
-                    <button onClick={() => window.location.reload()} className="btn-primary w-full justify-center">重新尝试</button>
+                    <h2 className="font-bold text-lg text-main mb-2">Failed to Load</h2>
+                    <p className="text-muted mb-6 text-sm leading-relaxed">{state.error}</p>
+                    <button onClick={() => window.location.reload()} className="px-4 py-2 bg-main text-app rounded-lg text-sm font-medium hover:opacity-90">Retry</button>
                 </div>
             </div>
         )}
@@ -180,79 +184,74 @@ const ODataViewerApp: React.FC = () => {
             <>
                 {viewMode === 'details' ? (
                      <div className="flex w-full h-full overflow-hidden">
-                        {/* 左侧列表 */}
-                        <div className="w-72 bg-surface/50 border-r border-border overflow-y-auto flex flex-col z-0 shrink-0">
-                            <div className="p-6 border-b border-border bg-canvas/30 sticky top-0 backdrop-blur-md z-10">
-                                <h2 className="font-black text-[10px] text-text-muted uppercase tracking-[0.2em] flex items-center justify-between">
-                                    <span>实体列表</span>
-                                    <span className="bg-brand/10 text-brand px-2 py-0.5 rounded-full text-[10px]">{state.schema.entities.length}</span>
-                                </h2>
+                        {/* 左侧列表 - Modern Navigation Sidebar */}
+                        <div className="w-64 bg-sidebar border-r border-base overflow-y-auto flex flex-col shrink-0 custom-scrollbar">
+                            <div className="px-4 py-3 text-[10px] font-bold text-muted uppercase tracking-wider sticky top-0 bg-sidebar/95 backdrop-blur-sm z-10 flex justify-between items-center">
+                                Entities
+                                <span className="bg-base px-1.5 rounded text-sec">{state.schema.entities.length}</span>
                             </div>
-                            <ul className="flex-1 py-4 px-3 space-y-1">
+                            <div className="px-2 pb-4 space-y-0.5">
                                 {state.schema.entities.map((entity, idx) => (
-                                    <li key={idx}>
-                                        <button
-                                            onClick={() => setSelectedEntity(entity.name)}
-                                            className={`w-full text-left px-4 py-3 rounded-xl flex items-center gap-3 transition-all ${
-                                                selectedEntity === entity.name 
-                                                ? 'bg-brand text-brand-fg shadow-lg shadow-indigo-500/30' 
-                                                : 'text-text-muted hover:bg-surface-hover hover:text-text-main'
-                                            }`}
-                                        >
-                                            <div className={`w-2 h-2 rounded-full ${selectedEntity === entity.name ? 'bg-white' : 'bg-brand/30'}`}></div>
-                                            <span className="text-xs font-bold truncate">{entity.name}</span>
-                                        </button>
-                                    </li>
+                                    <button
+                                        key={idx}
+                                        onClick={() => setSelectedEntity(entity.name)}
+                                        className={`w-full text-left px-3 py-2 rounded-md flex items-center gap-3 transition-all text-xs group ${
+                                            selectedEntity === entity.name 
+                                            ? 'bg-white dark:bg-white/10 text-main shadow-sm font-semibold' 
+                                            : 'text-sec hover:bg-hover hover:text-main'
+                                        }`}
+                                    >
+                                        <Box className={`w-3.5 h-3.5 ${selectedEntity === entity.name ? 'text-[rgb(var(--c-accent))]' : 'text-muted group-hover:text-sec'}`} />
+                                        <span className="truncate">{entity.name}</span>
+                                    </button>
                                 ))}
-                            </ul>
+                            </div>
                         </div>
 
                         {/* 详情内容 */}
-                        <div className="flex-1 bg-canvas overflow-y-auto p-12">
+                        <div className="flex-1 bg-app overflow-y-auto p-8 custom-scrollbar">
                             {currentEntity ? (
-                                <div className="max-w-5xl mx-auto space-y-10">
-                                    <div className="flex items-end justify-between border-b border-border pb-8">
-                                        <div>
-                                            <div className="flex items-center gap-3 mb-2">
-                                                <div className="w-8 h-8 bg-indigo-500/10 rounded-lg flex items-center justify-center text-indigo-500">
-                                                    <Layers className="w-4 h-4" />
-                                                </div>
-                                                <span className="text-xs font-bold text-text-muted uppercase tracking-widest">{state.schema.namespace}</span>
-                                            </div>
-                                            <h2 className="text-4xl font-black text-text-main tracking-tight">{currentEntity.name}</h2>
+                                <div className="max-w-4xl mx-auto pb-10">
+                                    <div className="mb-8">
+                                        <div className="flex items-center gap-2 text-xs text-muted mb-2 font-mono">
+                                            <span>{state.schema.namespace}</span>
+                                            <span>/</span>
                                         </div>
-                                        <div className="flex flex-wrap gap-2">
-                                            {currentEntity.keys.map(k => (
-                                                <span key={k} className="bg-brand/5 text-brand text-[10px] px-3 py-1.5 rounded-lg border border-brand/20 font-black uppercase flex items-center gap-2">
-                                                    <span className="w-1.5 h-1.5 bg-brand rounded-full"></span>
-                                                    主键: {k}
-                                                </span>
-                                            ))}
+                                        <div className="flex items-start justify-between">
+                                            <h2 className="text-3xl font-bold text-main tracking-tight">{currentEntity.name}</h2>
+                                            <div className="flex gap-2">
+                                                {currentEntity.keys.map(k => (
+                                                    <span key={k} className="bg-[rgb(var(--c-accent))]/10 text-[rgb(var(--c-accent))] text-[10px] px-2 py-1 rounded-md font-bold uppercase border border-[rgb(var(--c-accent))]/20">
+                                                        PK: {k}
+                                                    </span>
+                                                ))}
+                                            </div>
                                         </div>
                                     </div>
 
-                                    <div className="grid grid-cols-1 xl:grid-cols-3 gap-10">
-                                        <div className="xl:col-span-2 space-y-4">
-                                            <h3 className="text-sm font-black text-text-main flex items-center gap-2 px-2 uppercase tracking-wider">
-                                                <Code className="w-4 h-4 text-brand" /> 属性字段 (Properties)
+                                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                                        {/* Properties */}
+                                        <div className="lg:col-span-2">
+                                            <h3 className="text-xs font-bold text-muted uppercase tracking-wider mb-4 flex items-center gap-2">
+                                                <Code className="w-3.5 h-3.5" /> Properties
                                             </h3>
-                                            <div className="bg-surface rounded-3xl border border-border shadow-sm overflow-hidden">
-                                                <table className="w-full text-xs text-left border-collapse">
-                                                    <thead className="bg-surface-hover/50 text-text-muted border-b border-border">
+                                            <div className="bg-panel rounded-xl border border-base shadow-sm overflow-hidden">
+                                                <table className="w-full text-xs text-left">
+                                                    <thead className="bg-hover/50 text-muted border-b border-base">
                                                         <tr>
-                                                            <th className="px-6 py-4 font-bold uppercase tracking-widest text-[10px]">字段名</th>
-                                                            <th className="px-6 py-4 font-bold uppercase tracking-widest text-[10px]">类型</th>
-                                                            <th className="px-6 py-4 font-bold uppercase tracking-widest text-[10px]">可为空</th>
+                                                            <th className="px-5 py-3 font-semibold w-1/3">Name</th>
+                                                            <th className="px-5 py-3 font-semibold w-1/3">Type</th>
+                                                            <th className="px-5 py-3 font-semibold text-right">Nullable</th>
                                                         </tr>
                                                     </thead>
-                                                    <tbody className="divide-y divide-border">
+                                                    <tbody className="divide-y divide-base">
                                                         {currentEntity.properties.map((p, i) => (
-                                                            <tr key={i} className="hover:bg-surface-hover/30 transition-colors">
-                                                                <td className="px-6 py-4 font-bold text-text-main flex items-center gap-2">
-                                                                    {p.name} {currentEntity.keys.includes(p.name) && <span className="text-brand">🔑</span>}
+                                                            <tr key={i} className="group hover:bg-hover/30 transition-colors">
+                                                                <td className="px-5 py-3 font-medium text-main flex items-center gap-2">
+                                                                    {p.name} {currentEntity.keys.includes(p.name) && <span className="text-[rgb(var(--c-accent))]" title="Key">🔑</span>}
                                                                 </td>
-                                                                <td className="px-6 py-4"><span className="px-2 py-0.5 bg-canvas rounded-md border border-border font-mono text-[10px] text-text-muted">{p.type}</span></td>
-                                                                <td className="px-6 py-4 text-text-muted">{p.nullable ? 'Yes' : 'No'}</td>
+                                                                <td className="px-5 py-3"><code className="px-1.5 py-0.5 bg-hover rounded text-sec font-mono text-[11px]">{p.type}</code></td>
+                                                                <td className="px-5 py-3 text-right text-muted">{p.nullable ? 'Yes' : 'No'}</td>
                                                             </tr>
                                                         ))}
                                                     </tbody>
@@ -260,23 +259,24 @@ const ODataViewerApp: React.FC = () => {
                                             </div>
                                         </div>
                                         
-                                        <div className="space-y-4">
-                                            <h3 className="text-sm font-black text-text-main flex items-center gap-2 px-2 uppercase tracking-wider">
-                                                <ArrowRight className="w-4 h-4 text-brand" /> 导航关联 (Navigation)
+                                        {/* Relations */}
+                                        <div>
+                                            <h3 className="text-xs font-bold text-muted uppercase tracking-wider mb-4 flex items-center gap-2">
+                                                <ArrowRight className="w-3.5 h-3.5" /> Navigation
                                             </h3>
-                                            <div className="space-y-3">
+                                            <div className="space-y-2">
                                                 {currentEntity.navigationProperties.map((nav, i) => (
-                                                    <div key={i} className="p-4 bg-surface rounded-2xl border border-border flex flex-col gap-2 hover:border-brand/30 transition-all group">
-                                                        <span className="font-black text-brand text-xs">{nav.name}</span>
-                                                        <div className="flex items-center gap-2 text-[10px] text-text-muted font-mono bg-canvas p-2 rounded-lg">
-                                                            <span className="shrink-0 opacity-50">Target:</span>
+                                                    <div key={i} className="p-3 bg-panel rounded-lg border border-base flex flex-col gap-1 hover:border-[rgb(var(--c-accent))] transition-colors group cursor-default shadow-sm">
+                                                        <span className="font-semibold text-main text-xs group-hover:text-[rgb(var(--c-accent))] transition-colors">{nav.name}</span>
+                                                        <div className="flex items-center gap-1.5 text-[10px] text-muted font-mono">
+                                                            <ArrowRight className="w-3 h-3 opacity-50" />
                                                             <span className="truncate">{nav.type}</span>
                                                         </div>
                                                     </div>
                                                 ))}
                                                 {currentEntity.navigationProperties.length === 0 && (
-                                                    <div className="p-10 border-2 border-dashed border-border rounded-3xl text-center text-text-muted text-xs italic opacity-50">
-                                                        无关联属性
+                                                    <div className="p-6 border border-dashed border-base rounded-lg text-center text-muted text-xs bg-hover/30">
+                                                        No navigation properties
                                                     </div>
                                                 )}
                                             </div>
@@ -284,9 +284,11 @@ const ODataViewerApp: React.FC = () => {
                                     </div>
                                 </div>
                             ) : (
-                                <div className="h-full flex flex-col items-center justify-center text-text-muted/40">
-                                    <Layers className="w-20 h-20 mb-4 stroke-[1px]" />
-                                    <p className="font-bold tracking-widest uppercase text-xs">从左侧选择一个实体以查看详情</p>
+                                <div className="h-full flex flex-col items-center justify-center text-muted/50">
+                                    <div className="w-16 h-16 bg-hover rounded-full flex items-center justify-center mb-4">
+                                        <Layers className="w-8 h-8 opacity-50" />
+                                    </div>
+                                    <p className="font-medium">Select an entity to view details</p>
                                 </div>
                             )}
                         </div>

@@ -4,88 +4,100 @@
 
 @layer base {
   :root {
-    /* --- Light Mode (清爽、高对比度) --- */
-    --bg-app: #ffffff;
-    --bg-panel: #ffffff;
-    --bg-sidebar: #f8fafc; /* Slate 50 */
-    --bg-header: #ffffff;
-    --bg-input: #ffffff;
+    /* --- Modern Light Theme (Clean, Crisp, Apple-like) --- */
+    --c-bg-app: 255 255 255;      /* Pure White */
+    --c-bg-sidebar: 249 250 251;  /* Gray 50 - 极淡的灰 */
+    --c-bg-panel: 255 255 255;
+    --c-bg-hover: 243 244 246;    /* Gray 100 */
+    --c-bg-active: 229 231 235;   /* Gray 200 */
     
-    --border-color: #e2e8f0; /* Slate 200 - 细边框 */
+    --c-border: 229 231 235;      /* Gray 200 - 极细极淡 */
+    --c-border-hover: 209 213 219;
     
-    --text-primary: #0f172a; /* Slate 900 */
-    --text-secondary: #475569; /* Slate 600 */
-    --text-muted: #94a3b8; /* Slate 400 */
+    --c-text-main: 17 24 39;      /* Gray 900 */
+    --c-text-sec: 75 85 99;       /* Gray 600 */
+    --c-text-muted: 156 163 175;  /* Gray 400 */
     
-    --accent-color: #6366f1; /* Indigo 500 */
-    --accent-bg: #eef2ff;    /* Indigo 50 */
-    --accent-hover: #4f46e5;
+    --c-accent: 16 185 129;       /* Emerald 500 (ChatGPT Green-ish) or Indigo */
+    --c-accent-hover: 5 150 105;
+    --c-accent-fg: 255 255 255;
+    --c-accent-subtle: 236 253 245; /* Emerald 50 */
     
-    /* 滚动条轨道颜色 */
-    --scroll-track: #f1f5f9;
-    --scroll-thumb: #cbd5e1;
+    /* Code Colors */
+    --c-code-bg: 250 250 250;
   }
 
   [data-theme='dark'] {
-    /* --- Dark Mode (深邃、护眼) --- */
-    --bg-app: #09090b;       /* Zinc 950 */
-    --bg-panel: #09090b;
-    --bg-sidebar: #121214;   /* Zinc 900+ */
-    --bg-header: #09090b;
-    --bg-input: #18181b;     /* Zinc 800 */
+    /* --- Modern Dark Theme (Deep Charcoal, Not Pure Black) --- */
+    --c-bg-app: 32 33 35;         /* ChatGPT Dark BG */
+    --c-bg-sidebar: 23 23 23;     /* Darker Sidebar */
+    --c-bg-panel: 48 48 48;       /* Lighter Panel */
+    --c-bg-hover: 64 65 78;       /* Hover state */
+    --c-bg-active: 48 48 58;
     
-    --border-color: #27272a; /* Zinc 800 */
+    --c-border: 60 60 60;         /* Subtle Border */
+    --c-border-hover: 80 80 80;
     
-    --text-primary: #e4e4e7; /* Zinc 200 */
-    --text-secondary: #a1a1aa; /* Zinc 400 */
-    --text-muted: #52525b;   /* Zinc 600 */
+    --c-text-main: 236 236 241;   /* Off White */
+    --c-text-sec: 197 197 209;    /* Light Gray */
+    --c-text-muted: 142 142 160;  /* Muted Gray */
     
-    --accent-color: #818cf8; /* Indigo 400 */
-    --accent-bg: #1e1b4b;    /* Indigo 950 */
-    --accent-hover: #6366f1;
+    --c-accent: 16 163 127;       /* ChatGPT Green */
+    --c-accent-hover: 26 127 100;
+    --c-accent-fg: 255 255 255;
+    --c-accent-subtle: 32 49 43;  /* Dark Green bg */
     
-    --scroll-track: #18181b;
-    --scroll-thumb: #3f3f46;
+    --c-code-bg: 0 0 0;
   }
 }
 
 body {
   margin: 0;
   padding: 0;
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-  background-color: var(--bg-app);
-  color: var(--text-primary);
-  font-size: 13px; /* 稍微减小基础字号以显示更多内容 */
-  line-height: 1.4;
+  font-family: 'Söhne', 'ui-sans-serif', 'system-ui', -apple-system, 'Segoe UI', Roboto, Ubuntu, Cantarell, 'Noto Sans', sans-serif, 'Helvetica Neue', Arial, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
+  background-color: rgb(var(--c-bg-app));
+  color: rgb(var(--c-text-main));
+  font-size: 14px;
+  line-height: 1.5;
   -webkit-font-smoothing: antialiased;
 }
 
+@layer utilities {
+  .bg-app { background-color: rgb(var(--c-bg-app)); }
+  .bg-sidebar { background-color: rgb(var(--c-bg-sidebar)); }
+  .bg-panel { background-color: rgb(var(--c-bg-panel)); }
+  .bg-hover { background-color: rgb(var(--c-bg-hover)); }
+  
+  .text-main { color: rgb(var(--c-text-main)); }
+  .text-sec { color: rgb(var(--c-text-sec)); }
+  .text-muted { color: rgb(var(--c-text-muted)); }
+  
+  .border-base { border-color: rgb(var(--c-border)); }
+  
+  .btn-icon {
+    @apply p-2 rounded-md text-sec hover:text-main hover:bg-hover transition-colors;
+  }
+}
+
 @layer components {
-  /* 滚动条美化 - 始终可见且不占太多空间 */
+  /* Ultra-thin Scrollbar */
   ::-webkit-scrollbar {
-    width: 10px;
-    height: 10px;
+    width: 6px;
+    height: 6px;
   }
   ::-webkit-scrollbar-track {
-    background: var(--scroll-track);
+    background: transparent;
   }
   ::-webkit-scrollbar-thumb {
-    background-color: var(--scroll-thumb);
-    border: 2px solid var(--scroll-track); /* 增加边距感 */
-    background-clip: content-box;
+    background-color: rgba(156, 163, 175, 0.3);
     border-radius: 99px;
   }
   ::-webkit-scrollbar-thumb:hover {
-    background-color: var(--accent-color);
+    background-color: rgba(156, 163, 175, 0.6);
   }
   
-  /* 强制横向滚动容器 */
-  .code-scroll-container {
-    @apply w-full h-full overflow-auto;
-  }
-
-  /* 通用紧凑面板 */
-  .compact-panel {
-    @apply bg-[var(--bg-panel)] border border-[var(--border-color)];
+  /* Input Reset */
+  .input-reset {
+    @apply bg-transparent border-none outline-none ring-0 w-full p-0;
   }
 }
