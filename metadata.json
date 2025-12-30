@@ -1,0 +1,14 @@
+{
+  "name": "OData Explorer & Visualizer",
+  "description": "自动检测并可视化 OData 服务 ($metadata) 的 Chrome 插件。支持解析、图表展示及接管 OData 链接。",
+  "permissions": [
+    "activeTab",
+    "storage",
+    "scripting",
+    "tabs"
+  ],
+  "host_permissions": [
+    "<all_urls>"
+  ],
+  "requestFramePermissions": []
+}
