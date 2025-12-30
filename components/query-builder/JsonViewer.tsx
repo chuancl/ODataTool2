@@ -22,7 +22,7 @@ const JsonNode: React.FC<JsonNodeProps> = ({ value }) => {
                     padding: '1rem',
                     height: '100%',
                     width: '100%',
-                    backgroundColor: 'transparent', // 让背景色由容器控制，避免闪烁
+                    backgroundColor: 'transparent', 
                     fontSize: '12px',
                     lineHeight: '1.5',
                 }}
