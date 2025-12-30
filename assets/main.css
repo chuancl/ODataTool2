@@ -4,102 +4,135 @@
 
 @layer base {
   :root {
-    /* 现代化 SaaS 配色 - Light */
-    --c-canvas: 241 245 249;    /* Slate 100 - app 背景 */
-    --c-surface: 255 255 255;   /* 纯白 - 卡片/面板背景 */
-    --c-surface-muted: 248 250 252; /* Slate 50 - 次级背景 */
-    --c-border: 226 232 240;    /* Slate 200 - 柔和边框 */
-    --c-border-active: 203 213 225; /* Slate 300 */
+    /* --- Light Mode: 专业企业级配色 (Blue/Grey) --- */
+    --bg-app: #f1f5f9;          /* Slate 100: 整体应用背景 */
+    --bg-panel: #ffffff;        /* White: 面板/卡片背景 */
+    --bg-header: #ffffff;       /* White: 顶部导航栏背景 */
+    --bg-sidebar: #f8fafc;      /* Slate 50: 侧边栏背景 */
     
-    --c-text-main: 15 23 42;    /* Slate 900 - 主要文字 */
-    --c-text-sec: 51 65 85;     /* Slate 700 - 次要文字 */
-    --c-text-muted: 100 116 139; /* Slate 500 - 弱化文字 */
+    --border-subtle: #e2e8f0;   /* Slate 200: 弱分割线 */
+    --border-strong: #cbd5e1;   /* Slate 300: 强分割线 (面板边缘) */
     
-    --c-brand: 79 70 229;       /* Indigo 600 */
-    --c-brand-hover: 67 56 202;
-    --c-brand-bg: 238 242 255;  /* Indigo 50 */
-    --c-brand-fg: 255 255 255;
+    --text-primary: #0f172a;    /* Slate 900: 主要文字 */
+    --text-secondary: #475569;  /* Slate 600: 次要文字/标签 */
+    --text-muted: #94a3b8;      /* Slate 400: 提示文字 */
+    
+    --accent-primary: #4f46e5;  /* Indigo 600: 主品牌色 */
+    --accent-hover: #4338ca;    /* Indigo 700 */
+    --accent-surface: #eef2ff;  /* Indigo 50: 选中态背景 */
+    --accent-text: #4f46e5;     /* Indigo 600: 链接/高亮文字 */
 
-    /* 语法高亮 */
-    --c-syn-key: 124 58 237;
-    --c-syn-str: 21 128 61;
-    --c-syn-num: 30 58 138;
-    --c-syn-bool: 180 83 9;
+    /* 语法高亮 (Light) */
+    --sh-key: #7c3aed;
+    --sh-str: #16a34a;
+    --sh-num: #2563eb;
+    --sh-bool: #d97706;
   }
 
   [data-theme='dark'] {
-    /* 现代化 SaaS 配色 - Dark */
-    --c-canvas: 15 23 42;       /* Slate 900 */
-    --c-surface: 30 41 59;      /* Slate 800 */
-    --c-surface-muted: 23 32 48; /* Slate 850 */
-    --c-border: 51 65 85;       /* Slate 700 */
-    --c-border-active: 71 85 105; /* Slate 600 */
+    /* --- Dark Mode: 深邃开发者风格 (Midnight) --- */
+    --bg-app: #0f172a;          /* Slate 900 */
+    --bg-panel: #1e293b;        /* Slate 800 */
+    --bg-header: #0f172a;       /* Slate 900 */
+    --bg-sidebar: #111827;      /* Gray 900 */
     
-    --c-text-main: 241 245 249;
-    --c-text-sec: 203 213 225;
-    --c-text-muted: 148 163 184;
+    --border-subtle: #334155;   /* Slate 700 */
+    --border-strong: #475569;   /* Slate 600 */
     
-    --c-brand: 99 102 241;      /* Indigo 400 */
-    --c-brand-hover: 129 140 248;
-    --c-brand-bg: 49 46 129;
-    --c-brand-fg: 255 255 255;
+    --text-primary: #f8fafc;    /* Slate 50 */
+    --text-secondary: #94a3b8;  /* Slate 400 */
+    --text-muted: #64748b;      /* Slate 500 */
     
-    --c-syn-key: 196 181 253;
-    --c-syn-str: 110 231 183;
-    --c-syn-num: 147 197 253;
-    --c-syn-bool: 253 186 116;
-  }
-}
+    --accent-primary: #6366f1;  /* Indigo 500 */
+    --accent-hover: #818cf8;    /* Indigo 400 */
+    --accent-surface: #312e81;  /* Indigo 900 */
+    --accent-text: #818cf8;     /* Indigo 400 */
 
-@layer components {
-  /* 紧凑型按钮 */
-  .btn-primary {
-    @apply flex items-center justify-center gap-2 px-3 py-1.5 rounded-md text-xs font-semibold transition-all shadow-sm
-           active:scale-95 disabled:opacity-50 disabled:pointer-events-none whitespace-nowrap;
-    background-color: rgb(var(--c-brand));
-    color: rgb(var(--c-brand-fg));
-  }
-  .btn-primary:hover {
-    background-color: rgb(var(--c-brand-hover));
-  }
-
-  .btn-secondary {
-    @apply flex items-center justify-center gap-2 px-3 py-1.5 rounded-md text-xs font-medium transition-all
-           bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700
-           text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700 hover:border-slate-300 whitespace-nowrap shadow-sm;
-  }
-
-  .btn-ghost {
-    @apply flex items-center justify-center gap-2 px-2 py-1.5 rounded-md text-xs font-medium transition-all
-           text-slate-500 hover:text-slate-800 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700/50 whitespace-nowrap;
-  }
-
-  /* 输入框统一样式 */
-  .input-base {
-    @apply w-full px-2.5 py-1.5 text-xs rounded-md border border-slate-200 dark:border-slate-700 
-           bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200
-           focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all;
+    /* 语法高亮 (Dark) */
+    --sh-key: #c084fc;
+    --sh-str: #4ade80;
+    --sh-num: #60a5fa;
+    --sh-bool: #fbbf24;
   }
 }
 
 body {
   margin: 0;
   padding: 0;
-  font-family: 'Inter', -apple-system, sans-serif;
-  background-color: rgb(var(--c-canvas));
-  color: rgb(var(--c-text-main));
-  font-size: 13px; /* 标准字号 */
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  background-color: var(--bg-app);
+  color: var(--text-primary);
+  font-size: 13px; /* 数据密集型应用的标准字号 */
+  line-height: 1.5;
   -webkit-font-smoothing: antialiased;
 }
 
-/* 优化滚动条 - 更细，不占空间 */
-::-webkit-scrollbar { width: 8px; height: 8px; }
-::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-corner { background: transparent; }
-::-webkit-scrollbar-thumb {
-  background: rgba(148, 163, 184, 0.4);
-  border-radius: 4px;
+/* --- Utilities --- */
+@layer components {
+  /* 面板容器 */
+  .panel-container {
+    background-color: var(--bg-panel);
+    border: 1px solid var(--border-strong);
+    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  }
+
+  /* 通用输入框 */
+  .input-control {
+    @apply w-full px-2.5 py-1.5 text-xs rounded border outline-none transition-all;
+    background-color: var(--bg-panel);
+    border-color: var(--border-strong);
+    color: var(--text-primary);
+  }
+  .input-control:focus {
+    border-color: var(--accent-primary);
+    box-shadow: 0 0 0 2px var(--accent-surface);
+  }
+
+  /* 按钮 */
+  .btn-primary {
+    @apply px-4 py-1.5 text-xs font-semibold rounded text-white shadow-sm transition-all active:translate-y-px;
+    background-color: var(--accent-primary);
+  }
+  .btn-primary:hover { background-color: var(--accent-hover); }
+  .btn-primary:disabled { opacity: 0.6; cursor: not-allowed; }
+
+  .btn-default {
+    @apply px-3 py-1.5 text-xs font-medium rounded border transition-all active:translate-y-px;
+    background-color: var(--bg-panel);
+    border-color: var(--border-strong);
+    color: var(--text-secondary);
+  }
+  .btn-default:hover {
+    background-color: var(--bg-app);
+    border-color: var(--accent-primary);
+    color: var(--accent-text);
+  }
+
+  /* 滚动条美化 */
+  ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    background-color: var(--border-strong);
+    border: 2px solid transparent;
+    background-clip: content-box;
+    border-radius: 99px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background-color: var(--text-muted);
+  }
+  /* 表格中的滚动条可以更细一点 */
+  .table-scroll::-webkit-scrollbar {
+      height: 8px;
+      width: 8px;
+  }
 }
-::-webkit-scrollbar-thumb:hover { 
-  background: rgba(148, 163, 184, 0.6); 
+
+/* 覆盖 Lucide 图标默认 stroke */
+.lucide {
+  stroke-width: 1.5px;
 }

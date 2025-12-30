@@ -1,5 +1,5 @@
 import React from 'react';
-import { ChevronRight, Braces, List, ExternalLink } from 'lucide-react';
+import { ChevronRight, ExternalLink } from 'lucide-react';
 
 interface DataCellProps {
     value: any;
@@ -8,13 +8,13 @@ interface DataCellProps {
 }
 
 const DataCell: React.FC<DataCellProps> = ({ value, colName, onDrill }) => {
-    if (value === null || value === undefined) return <span className="text-gray-300 text-[11px] italic">null</span>;
+    if (value === null || value === undefined) return <span className="text-[var(--text-muted)] text-[11px] italic">null</span>;
     
     // Array
     if (Array.isArray(value)) {
         return (
-            <button onClick={onDrill} className="inline-flex items-center gap-1 text-[10px] font-medium text-brand bg-brand/5 hover:bg-brand/10 px-1.5 py-0.5 rounded border border-brand/20 transition-colors">
-                <span>Array({value.length})</span>
+            <button onClick={onDrill} className="inline-flex items-center gap-1 text-[10px] font-medium text-[var(--accent-text)] bg-[var(--accent-surface)] hover:bg-[var(--accent-primary)] hover:text-white px-1.5 py-0.5 rounded border border-[var(--accent-primary)]/20 transition-colors">
+                <span>[{value.length}]</span>
                 <ChevronRight className="w-3 h-3" />
             </button>
         );
@@ -23,8 +23,8 @@ const DataCell: React.FC<DataCellProps> = ({ value, colName, onDrill }) => {
     // Object
     if (typeof value === 'object') {
         return (
-             <button onClick={onDrill} className="inline-flex items-center gap-1 text-[10px] font-medium text-brand bg-brand/5 hover:bg-brand/10 px-1.5 py-0.5 rounded border border-brand/20 transition-colors">
-                <span>Object</span>
+             <button onClick={onDrill} className="inline-flex items-center gap-1 text-[10px] font-medium text-[var(--accent-text)] bg-[var(--accent-surface)] hover:bg-[var(--accent-primary)] hover:text-white px-1.5 py-0.5 rounded border border-[var(--accent-primary)]/20 transition-colors">
+                <span>{`{}`}</span>
                 <ChevronRight className="w-3 h-3" />
             </button>
         );
@@ -36,9 +36,9 @@ const DataCell: React.FC<DataCellProps> = ({ value, colName, onDrill }) => {
     if (str.startsWith('data:image/')) {
         return (
             <div className="group relative">
-                <span className="text-[10px] text-text-muted cursor-help underline decoration-dashed">Base64 Image</span>
-                <div className="absolute left-0 bottom-full mb-1 hidden group-hover:block z-50">
-                    <img src={str} alt="Preview" className="h-20 w-auto object-contain bg-white border border-gray-200 shadow-lg rounded" />
+                <span className="text-[10px] text-[var(--text-muted)] cursor-help underline decoration-dashed">Image</span>
+                <div className="absolute left-0 top-full mt-1 hidden group-hover:block z-50">
+                    <img src={str} alt="Preview" className="h-24 w-auto object-contain bg-[var(--bg-panel)] border border-[var(--border-strong)] shadow-lg rounded" />
                 </div>
             </div>
         );
@@ -47,7 +47,7 @@ const DataCell: React.FC<DataCellProps> = ({ value, colName, onDrill }) => {
     // URL
     if (str.startsWith('http')) {
         return (
-            <a href={str} target="_blank" rel="noreferrer" className="flex items-center gap-1 text-brand hover:underline max-w-[200px] truncate" onClick={e=>e.stopPropagation()}>
+            <a href={str} target="_blank" rel="noreferrer" className="flex items-center gap-1 text-[var(--accent-text)] hover:underline max-w-[200px]" onClick={e=>e.stopPropagation()}>
                 <span className="truncate">{str}</span>
                 <ExternalLink className="w-3 h-3 shrink-0 opacity-50" />
             </a>
@@ -56,16 +56,16 @@ const DataCell: React.FC<DataCellProps> = ({ value, colName, onDrill }) => {
     
     // Boolean
     if (typeof value === 'boolean') {
-        return <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded ${value ? 'text-green-700 bg-green-50' : 'text-red-700 bg-red-50'}`}>{String(value)}</span>;
+        return <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded ${value ? 'text-green-600 bg-green-50 dark:bg-green-900/20' : 'text-red-600 bg-red-50 dark:bg-red-900/20'}`}>{String(value).toUpperCase()}</span>;
     }
 
     // Number
     if (typeof value === 'number') {
-        return <span className="text-blue-600 font-mono text-xs">{value}</span>;
+        return <span className="text-[var(--sh-num)] font-mono text-xs">{value}</span>;
     }
 
     // String
-    return <span className="text-text-main text-xs whitespace-nowrap" title={str}>{str}</span>;
+    return <span className="text-[var(--text-primary)] text-xs whitespace-nowrap block truncate max-w-[300px]" title={str}>{str}</span>;
 };
 
 interface DataTableProps {
@@ -77,9 +77,8 @@ interface DataTableProps {
 const DataTable: React.FC<DataTableProps> = ({ data, onDrillDown, columnTypes }) => {
     if (!data || data.length === 0) {
         return (
-            <div className="flex flex-col items-center justify-center h-full text-text-muted">
-                <List className="w-12 h-12 mb-2 opacity-20" />
-                <p className="text-xs">No data returned</p>
+            <div className="flex flex-col items-center justify-center h-full text-[var(--text-muted)] select-none">
+                <p className="text-xs">No records found</p>
             </div>
         );
     }
@@ -87,29 +86,33 @@ const DataTable: React.FC<DataTableProps> = ({ data, onDrillDown, columnTypes })
     const columns = Array.from(new Set(data.flatMap(Object.keys)));
 
     return (
-        <div className="w-full inline-block align-top">
-            <table className="min-w-full divide-y divide-border border-b border-border">
-                <thead className="bg-surface-muted sticky top-0 z-10">
+        <div className="min-w-full inline-block align-top">
+            <table className="min-w-full border-collapse border-0">
+                <thead className="bg-[var(--bg-app)] sticky top-0 z-10 shadow-[0_1px_0_var(--border-subtle)]">
                     <tr>
-                        <th scope="col" className="px-3 py-2 text-left text-[10px] font-bold text-text-muted uppercase tracking-wider w-10 border-r border-border bg-surface-muted sticky left-0 z-20">
-                            #
+                        {/* Sticky Row Number Column */}
+                        <th className="sticky left-0 z-20 bg-[var(--bg-app)] border-r border-b border-[var(--border-strong)] w-10 px-2 py-1.5 text-center">
+                            <span className="text-[10px] font-bold text-[var(--text-muted)]">#</span>
                         </th>
                         {columns.map(col => (
-                            <th key={col} scope="col" className="px-3 py-2 text-left text-[11px] font-bold text-text-sec uppercase tracking-wide border-r border-border whitespace-nowrap min-w-[100px] bg-surface-muted">
-                                {col}
-                                {columnTypes?.get(col) && <span className="ml-1 text-[9px] font-normal text-text-muted normal-case bg-slate-200/50 px-1 rounded">{columnTypes.get(col)}</span>}
+                            <th key={col} className="border-r border-b border-[var(--border-subtle)] px-3 py-2 text-left bg-[var(--bg-app)]">
+                                <div className="flex flex-col">
+                                    <span className="text-[11px] font-bold text-[var(--text-secondary)] whitespace-nowrap">{col}</span>
+                                    {columnTypes?.get(col) && <span className="text-[9px] font-normal text-[var(--text-muted)] font-mono">{columnTypes.get(col)}</span>}
+                                </div>
                             </th>
                         ))}
                     </tr>
                 </thead>
-                <tbody className="bg-surface divide-y divide-border">
+                <tbody className="bg-[var(--bg-panel)]">
                     {data.map((row, rowIdx) => (
-                        <tr key={rowIdx} className="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
-                            <td className="px-3 py-1.5 whitespace-nowrap text-[10px] text-text-muted font-mono border-r border-border bg-surface sticky left-0 z-10 group-hover:bg-slate-50 dark:group-hover:bg-slate-800/50">
+                        <tr key={rowIdx} className="hover:bg-[var(--bg-app)] transition-colors group">
+                            {/* Sticky Row Number Cell */}
+                            <td className="sticky left-0 z-10 bg-[var(--bg-panel)] group-hover:bg-[var(--bg-app)] border-r border-b border-[var(--border-subtle)] px-2 py-1.5 text-center text-[10px] font-mono text-[var(--text-muted)]">
                                 {rowIdx + 1}
                             </td>
                             {columns.map(col => (
-                                <td key={col} className="px-3 py-1.5 text-xs border-r border-border last:border-0 max-w-xs whitespace-nowrap overflow-hidden">
+                                <td key={col} className="border-r border-b border-[var(--border-subtle)] px-3 py-1.5">
                                     <DataCell 
                                         value={row[col]} 
                                         colName={col}

@@ -1,5 +1,5 @@
-import React from 'react';
-import { ChevronDown, Filter, ArrowUpDown, Database, LayoutGrid, Layers, RefreshCw } from 'lucide-react';
+import React, { useState } from 'react';
+import { ChevronDown, ChevronRight, Filter, ArrowUpDown, Database, LayoutGrid, Layers, Hash, SkipForward } from 'lucide-react';
 import { ODataSchema, ODataEntity } from '../../types';
 
 interface SidebarProps {
@@ -25,6 +25,40 @@ interface SidebarProps {
     onCountChange: (val: boolean) => void;
 }
 
+const SidebarSection: React.FC<{ 
+    title: string; 
+    icon: React.ElementType; 
+    children: React.ReactNode; 
+    defaultOpen?: boolean; 
+    badge?: number | string 
+}> = ({ title, icon: Icon, children, defaultOpen = true, badge }) => {
+    const [isOpen, setIsOpen] = useState(defaultOpen);
+    return (
+        <div className="border-b border-[var(--border-subtle)] last:border-0">
+            <button 
+                onClick={() => setIsOpen(!isOpen)}
+                className="w-full flex items-center justify-between px-3 py-2.5 bg-[var(--bg-sidebar)] hover:bg-[var(--bg-app)] transition-colors select-none"
+            >
+                <div className="flex items-center gap-2 text-xs font-bold text-[var(--text-secondary)] uppercase tracking-wide">
+                    <Icon className="w-3.5 h-3.5" />
+                    {title}
+                </div>
+                <div className="flex items-center gap-2">
+                    {badge !== undefined && badge !== 0 && badge !== '' && (
+                        <span className="text-[10px] px-1.5 py-0.5 bg-[var(--accent-surface)] text-[var(--accent-text)] rounded-full font-mono">{badge}</span>
+                    )}
+                    {isOpen ? <ChevronDown className="w-3.5 h-3.5 text-[var(--text-muted)]" /> : <ChevronRight className="w-3.5 h-3.5 text-[var(--text-muted)]" />}
+                </div>
+            </button>
+            {isOpen && (
+                <div className="px-3 py-3 bg-[var(--bg-panel)] animate-in slide-in-from-top-1 duration-200">
+                    {children}
+                </div>
+            )}
+        </div>
+    );
+};
+
 const Sidebar: React.FC<SidebarProps> = ({
     schema, selectedSet, onSetChange, currentEntity,
     selectedProps, onPropChange,
@@ -45,149 +79,147 @@ const Sidebar: React.FC<SidebarProps> = ({
     };
 
     return (
-        <div className="w-[300px] bg-surface-muted border-r border-border flex flex-col h-full overflow-y-auto shrink-0 text-sm">
-            {/* Entity Selection */}
-            <div className="p-4 border-b border-border bg-surface-muted sticky top-0 z-10">
-                <label className="text-[10px] font-bold text-text-muted uppercase tracking-wider mb-1.5 block">Entity Set</label>
+        <div className="w-[260px] bg-[var(--bg-sidebar)] flex flex-col h-full overflow-y-auto custom-scrollbar shrink-0 border-r border-[var(--border-strong)] z-10">
+            {/* Target Selection */}
+            <div className="p-3 border-b border-[var(--border-strong)] bg-[var(--bg-sidebar)] sticky top-0 z-20 shadow-sm">
+                <label className="text-[10px] font-bold text-[var(--text-muted)] uppercase tracking-wider mb-2 block">Target Entity Set</label>
                 <div className="relative">
                     <select 
                         value={selectedSet} 
                         onChange={e => onSetChange(e.target.value)}
-                        className="input-base pr-8 font-semibold text-text-main"
+                        className="input-control pr-8 font-semibold"
                     >
                         {schema.entitySets.map(s => (
                             <option key={s.name} value={s.name}>{s.name}</option>
                         ))}
                     </select>
-                    <ChevronDown className="absolute right-2.5 top-2.5 w-3.5 h-3.5 text-text-muted pointer-events-none" />
+                    <ChevronDown className="absolute right-2.5 top-2.5 w-3.5 h-3.5 text-[var(--text-muted)] pointer-events-none" />
                 </div>
             </div>
 
             {currentEntity ? (
-                <div className="flex-1 p-4 space-y-6">
+                <div className="flex-1">
                     {/* $select */}
-                    <section>
+                    <SidebarSection title="Columns" icon={LayoutGrid} badge={selectedProps.size > 0 ? selectedProps.size : undefined}>
                         <div className="flex items-center justify-between mb-2">
-                            <h3 className="text-[11px] font-bold text-text-sec flex items-center gap-1.5">
-                                <LayoutGrid className="w-3 h-3 text-brand" /> Select
-                            </h3>
-                            <button 
-                                onClick={() => onPropChange(new Set())}
-                                className="text-[10px] text-text-muted hover:text-brand transition-colors"
-                            >
-                                Clear
-                            </button>
+                            <span className="text-[10px] text-[var(--text-muted)]">Select fields ($select)</span>
+                            {selectedProps.size > 0 && (
+                                <button onClick={() => onPropChange(new Set())} className="text-[10px] text-[var(--accent-text)] hover:underline">Reset</button>
+                            )}
                         </div>
-                        <div className="max-h-48 overflow-y-auto border border-border rounded-md p-1 bg-white dark:bg-slate-800 grid grid-cols-1 gap-0.5">
+                        <div className="max-h-48 overflow-y-auto border border-[var(--border-subtle)] rounded bg-[var(--bg-app)] p-1 space-y-0.5 custom-scrollbar">
                             {currentEntity.properties.map(p => (
-                                <label key={p.name} className="flex items-center gap-2 cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-700 p-1.5 rounded transition-colors">
+                                <label key={p.name} className="flex items-center gap-2 p-1.5 rounded hover:bg-[var(--bg-panel)] cursor-pointer group transition-colors">
                                     <input 
                                         type="checkbox" 
-                                        className="w-3.5 h-3.5 rounded border-slate-300 text-brand focus:ring-brand"
+                                        className="w-3.5 h-3.5 rounded border-[var(--border-strong)] text-[var(--accent-primary)] focus:ring-0 checked:bg-[var(--accent-primary)] checked:border-[var(--accent-primary)] transition-all"
                                         checked={selectedProps.has(p.name)}
                                         onChange={() => toggleSelection(selectedProps, p.name, onPropChange)}
                                     />
-                                    <span className={`text-xs truncate ${selectedProps.has(p.name) ? 'text-text-main font-medium' : 'text-text-muted'}`}>{p.name}</span>
+                                    <span className={`text-xs truncate ${selectedProps.has(p.name) ? 'text-[var(--text-primary)] font-medium' : 'text-[var(--text-secondary)] group-hover:text-[var(--text-primary)]'}`}>
+                                        {p.name}
+                                    </span>
                                 </label>
                             ))}
                         </div>
-                    </section>
+                    </SidebarSection>
 
                     {/* $expand */}
                     {currentEntity.navigationProperties.length > 0 && (
-                        <section>
-                             <div className="flex items-center justify-between mb-2">
-                                <h3 className="text-[11px] font-bold text-text-sec flex items-center gap-1.5">
-                                    <Layers className="w-3 h-3 text-brand" /> Expand
-                                </h3>
-                            </div>
+                        <SidebarSection title="Relations" icon={Layers} badge={expandProps.size > 0 ? expandProps.size : undefined} defaultOpen={false}>
                             <div className="flex flex-col gap-1">
+                                <span className="text-[10px] text-[var(--text-muted)] mb-1">Expand relations ($expand)</span>
                                 {currentEntity.navigationProperties.map(np => (
-                                    <label key={np.name} className={`flex items-center gap-2 p-1.5 rounded border cursor-pointer transition-all ${expandProps.has(np.name) ? 'bg-brand/5 border-brand/30' : 'bg-white dark:bg-slate-800 border-border hover:border-slate-300'}`}>
-                                        <input type="checkbox" className="w-3.5 h-3.5 rounded border-slate-300 text-brand" checked={expandProps.has(np.name)} onChange={() => toggleSelection(expandProps, np.name, onExpandChange)} />
-                                        <span className="text-xs font-medium text-text-main truncate">{np.name}</span>
+                                    <label key={np.name} className={`flex items-center gap-2 px-2 py-1.5 rounded border cursor-pointer transition-all ${
+                                        expandProps.has(np.name) 
+                                        ? 'bg-[var(--accent-surface)] border-[var(--accent-primary)]/30 text-[var(--accent-text)] font-medium' 
+                                        : 'bg-[var(--bg-panel)] border-[var(--border-subtle)] text-[var(--text-secondary)] hover:border-[var(--border-strong)]'
+                                    }`}>
+                                        <input type="checkbox" className="hidden" checked={expandProps.has(np.name)} onChange={() => toggleSelection(expandProps, np.name, onExpandChange)} />
+                                        <div className={`w-3 h-3 rounded-full border flex items-center justify-center ${expandProps.has(np.name) ? 'border-[var(--accent-primary)] bg-[var(--accent-primary)]' : 'border-[var(--text-muted)]'}`}>
+                                            {expandProps.has(np.name) && <div className="w-1.5 h-1.5 bg-white rounded-full" />}
+                                        </div>
+                                        <span className="text-xs truncate">{np.name}</span>
                                     </label>
                                 ))}
                             </div>
-                        </section>
+                        </SidebarSection>
                     )}
 
-                    {/* Parameters */}
-                    <section className="space-y-3 pt-2 border-t border-border">
-                        <div>
-                            <h3 className="text-[11px] font-bold text-text-sec mb-1.5 flex items-center gap-1.5">
-                                <Filter className="w-3 h-3" /> Filter
-                            </h3>
-                            <input 
-                                type="text" 
-                                placeholder="Price gt 20" 
-                                className="input-base font-mono"
-                                value={filter}
-                                onChange={e => onFilterChange(e.target.value)}
-                            />
-                        </div>
-
-                        <div>
-                            <h3 className="text-[11px] font-bold text-text-sec mb-1.5 flex items-center gap-1.5">
-                                <ArrowUpDown className="w-3 h-3" /> Sort
-                            </h3>
-                            <div className="flex gap-1.5">
-                                <div className="relative flex-1">
+                    {/* Filtering */}
+                    <SidebarSection title="Filter & Sort" icon={Filter} badge={filter ? '1' : undefined}>
+                        <div className="space-y-3">
+                            <div>
+                                <label className="text-[10px] font-bold text-[var(--text-muted)] block mb-1">Filter ($filter)</label>
+                                <input 
+                                    type="text" 
+                                    placeholder="e.g. Price gt 20" 
+                                    className="input-control font-mono placeholder:text-[var(--text-muted)]/50"
+                                    value={filter}
+                                    onChange={e => onFilterChange(e.target.value)}
+                                />
+                            </div>
+                            <div>
+                                <label className="text-[10px] font-bold text-[var(--text-muted)] block mb-1">Order By ($orderby)</label>
+                                <div className="flex gap-1">
                                     <select 
-                                        className="input-base pr-6"
+                                        className="input-control flex-1"
                                         value={orderBy}
                                         onChange={e => onOrderByChange(e.target.value)}
                                     >
                                         <option value="">(None)</option>
                                         {currentEntity.properties.map(p => <option key={p.name} value={p.name}>{p.name}</option>)}
                                     </select>
-                                </div>
-                                <div className="relative w-24">
-                                     <select 
-                                        className="input-base pr-6"
-                                        value={orderByDir}
-                                        onChange={e => onOrderByDirChange(e.target.value as 'asc' | 'desc')}
+                                    <button 
+                                        onClick={() => onOrderByDirChange(orderByDir === 'asc' ? 'desc' : 'asc')}
+                                        className="px-2 border border-[var(--border-strong)] rounded bg-[var(--bg-panel)] hover:bg-[var(--bg-app)] text-[var(--text-secondary)]"
+                                        title="Toggle Direction"
                                     >
-                                        <option value="asc">Asc</option>
-                                        <option value="desc">Desc</option>
-                                    </select>
+                                        {orderByDir === 'asc' ? 'ASC' : 'DESC'}
+                                    </button>
                                 </div>
                             </div>
                         </div>
+                    </SidebarSection>
 
-                        <div className="grid grid-cols-2 gap-2">
+                    {/* Paging */}
+                    <SidebarSection title="Pagination" icon={Hash} badge={(top || skip) ? '•' : undefined} defaultOpen={false}>
+                        <div className="grid grid-cols-2 gap-2 mb-3">
                             <div>
-                                <label className="text-[10px] font-bold text-text-muted mb-1 block">Top</label>
+                                <label className="text-[10px] font-bold text-[var(--text-muted)] block mb-1">Top</label>
                                 <input 
                                     type="number" 
-                                    className="input-base"
+                                    className="input-control"
                                     placeholder="All"
                                     value={top}
                                     onChange={e => onTopChange(e.target.value ? Number(e.target.value) : '')}
                                 />
                             </div>
                             <div>
-                                <label className="text-[10px] font-bold text-text-muted mb-1 block">Skip</label>
+                                <label className="text-[10px] font-bold text-[var(--text-muted)] block mb-1">Skip</label>
                                 <input 
                                     type="number" 
-                                    className="input-base"
+                                    className="input-control"
                                     placeholder="0"
                                     value={skip}
                                     onChange={e => onSkipChange(e.target.value ? Number(e.target.value) : '')}
                                 />
                             </div>
                         </div>
-
-                        <label className="flex items-center gap-2 cursor-pointer select-none">
-                            <input type="checkbox" checked={count} onChange={e => onCountChange(e.target.checked)} className="rounded border-slate-300 text-brand focus:ring-brand" />
-                            <span className="text-xs font-medium text-text-sec">Include Count ($count)</span>
+                        <label className="flex items-center gap-2 cursor-pointer select-none p-2 rounded border border-[var(--border-subtle)] bg-[var(--bg-app)] hover:border-[var(--border-strong)] transition-colors">
+                            <input 
+                                type="checkbox" 
+                                checked={count} 
+                                onChange={e => onCountChange(e.target.checked)} 
+                                className="w-3.5 h-3.5 rounded border-[var(--border-strong)] text-[var(--accent-primary)] focus:ring-0" 
+                            />
+                            <span className="text-xs font-medium text-[var(--text-primary)]">Include Count ($count)</span>
                         </label>
-                    </section>
+                    </SidebarSection>
                 </div>
             ) : (
-                <div className="p-8 text-center text-text-muted/50 mt-10">
-                    <Database className="w-8 h-8 mx-auto mb-2 opacity-50" />
-                    <p className="text-xs">Select an entity</p>
+                <div className="p-8 text-center text-[var(--text-muted)] mt-10">
+                    <p className="text-xs">No Entity Selected</p>
                 </div>
             )}
         </div>
