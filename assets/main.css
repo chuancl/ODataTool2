@@ -4,7 +4,7 @@
 
 @layer base {
   :root {
-    /* Modern Indigo Theme */
+    /* 现代靛蓝主题 - 浅色 */
     --c-canvas: 248 250 252;
     --c-surface: 255 255 255;
     --c-surface-hover: 241 245 249;
@@ -25,7 +25,7 @@
   }
 
   [data-theme='dark'] {
-    /* Professional Deep Dark */
+    /* 专业深色主题 */
     --c-canvas: 11 15 25;
     --c-surface: 17 24 39;
     --c-surface-hover: 31 41 55;
@@ -46,7 +46,7 @@
   }
 
   [data-theme='warm'] {
-    /* Elegant Paper Theme */
+    /* 优雅纸张主题 */
     --c-canvas: 253 251 247;
     --c-surface: 255 255 255;
     --c-surface-hover: 248 245 240;
@@ -68,17 +68,34 @@
 
 @layer components {
   .btn-primary {
-    @apply flex items-center gap-2 px-5 py-2 rounded-lg text-sm font-bold transition-all
-           bg-gradient-to-br from-brand to-brand/90 text-brand-fg shadow-md
-           hover:shadow-lg hover:brightness-110 active:scale-[0.98] disabled:opacity-50 disabled:pointer-events-none;
+    @apply flex items-center gap-2 px-5 py-2 rounded-lg text-sm font-bold transition-all shadow-md
+           active:scale-[0.98] disabled:opacity-50 disabled:pointer-events-none;
+    /* 直接使用 CSS 变量避免 Tailwind @apply 无法解析自定义颜色工具类的问题 */
+    background: linear-gradient(to bottom right, rgb(var(--c-brand)), rgb(var(--c-brand) / 0.9));
+    color: rgb(var(--c-brand-fg));
   }
+
+  .btn-primary:hover {
+    @apply shadow-lg brightness-110;
+  }
+
   .btn-secondary {
-    @apply flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold transition-all
-           bg-surface border border-border text-text-main shadow-sm
-           hover:bg-surface-hover hover:border-brand/30 active:scale-[0.98];
+    @apply flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold transition-all shadow-sm
+           active:scale-[0.98];
+    background-color: rgb(var(--c-surface));
+    border: 1px solid rgb(var(--c-border));
+    color: rgb(var(--c-text-main));
   }
+
+  .btn-secondary:hover {
+    background-color: rgb(var(--c-surface-hover));
+    border-color: rgb(var(--c-brand) / 0.3);
+  }
+
   .glass-card {
-    @apply bg-surface/80 backdrop-blur-md border border-border shadow-sm rounded-xl;
+    @apply backdrop-blur-md shadow-sm rounded-xl;
+    background-color: rgb(var(--c-surface) / 0.8);
+    border: 1px solid rgb(var(--c-border));
   }
 }
 
