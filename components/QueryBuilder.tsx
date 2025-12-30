@@ -224,7 +224,7 @@ const QueryBuilder: React.FC<QueryBuilderProps> = ({ schema, metadataUrl, theme 
                         onKeyDown={(e) => e.key === 'Enter' && executeQuery()}
                         size="sm"
                         radius="md"
-                        variant="bordered"
+                        variant="flat"
                         placeholder="https://api.example.com/odata/..."
                         startContent={
                             <Chip size="sm" color="primary" variant="flat" classNames={{ base: "h-5", content: "px-1 text-[10px] font-bold" }}>GET</Chip>
@@ -246,7 +246,7 @@ const QueryBuilder: React.FC<QueryBuilderProps> = ({ schema, metadataUrl, theme 
                         }
                         classNames={{
                             input: "font-mono text-small",
-                            inputWrapper: "bg-default-50 hover:bg-default-100 transition-colors"
+                            inputWrapper: "bg-default-100 hover:bg-default-200 transition-colors"
                         }}
                     />
                 </div>
@@ -267,7 +267,7 @@ const QueryBuilder: React.FC<QueryBuilderProps> = ({ schema, metadataUrl, theme 
                 <Card className="flex-1 w-full flex flex-col overflow-hidden border border-divider shadow-sm" shadow="none">
                     
                     {/* Tabs Header */}
-                    <div className="border-b border-divider flex items-center px-4 py-2 justify-between bg-background shrink-0">
+                    <div className="border-b border-divider flex items-center px-4 justify-between bg-background shrink-0 h-12">
                         <Tabs 
                             aria-label="Result View" 
                             selectedKey={activeTab}
@@ -275,10 +275,10 @@ const QueryBuilder: React.FC<QueryBuilderProps> = ({ schema, metadataUrl, theme 
                             variant="underlined"
                             color="primary"
                             classNames={{
-                                tabList: "gap-6 w-full relative rounded-none p-0 border-b border-divider",
+                                tabList: "gap-6 w-full relative p-0 border-b border-divider border-none",
                                 cursor: "w-full bg-primary",
-                                tab: "max-w-fit px-0 h-10",
-                                tabContent: "group-data-[selected=true]:text-primary"
+                                tab: "max-w-fit px-0 h-12",
+                                tabContent: "group-data-[selected=true]:text-primary font-medium"
                             }}
                         >
                             <Tab 

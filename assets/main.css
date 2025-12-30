@@ -2,11 +2,28 @@
 @tailwind components;
 @tailwind utilities;
 
+/* 
+  HeroUI 默认变量兜底 
+  防止插件加载延迟或失败导致页面透明/无样式
+*/
+:root {
+  --heroui-background: 0 0% 100%;
+  --heroui-foreground: 240 10% 3.9%;
+}
+
+.dark {
+  --heroui-background: 240 10% 3.9%;
+  --heroui-foreground: 0 0% 98%;
+}
+
 body {
   margin: 0;
   padding: 0;
   font-family: 'Inter', sans-serif;
   -webkit-font-smoothing: antialiased;
+  background-color: hsl(var(--heroui-background));
+  color: hsl(var(--heroui-foreground));
+  min-height: 100vh;
 }
 
 /* 
