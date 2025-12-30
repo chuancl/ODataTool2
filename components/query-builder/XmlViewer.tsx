@@ -60,7 +60,7 @@ const calculateLineNumbers = (root: Node): LineMap => {
 // --- Components ---
 
 const Gutter: React.FC<{ num?: number }> = ({ num }) => (
-    <div className="w-10 pr-3 text-right text-slate-300 select-none text-[10px] leading-5 font-mono shrink-0 border-r border-transparent group-hover:border-slate-100 bg-white/50">
+    <div className="w-10 pr-3 text-right text-text-muted/50 select-none text-[10px] leading-5 font-mono shrink-0 border-r border-transparent group-hover:border-border bg-canvas/30">
         {num}
     </div>
 );
@@ -86,9 +86,9 @@ const XmlNode: React.FC<XmlNodeProps> = ({ node, lineMap, level = 0 }) => {
         const text = node.textContent?.trim();
         if (!text) return null;
         return (
-            <div className="flex group hover:bg-slate-50 transition-colors">
+            <div className="flex group hover:bg-surface-hover transition-colors">
                 <Gutter num={lineInfo.start} />
-                <div style={indentStyle} className="flex-1 font-mono text-xs leading-5 break-all text-slate-700">
+                <div style={indentStyle} className="flex-1 font-mono text-xs leading-5 break-all text-text-main">
                     {text}
                 </div>
             </div>
@@ -109,7 +109,7 @@ const XmlNode: React.FC<XmlNodeProps> = ({ node, lineMap, level = 0 }) => {
     return (
         <>
             {/* Start Line (Opening Tag) */}
-            <div className="flex group hover:bg-slate-50 transition-colors">
+            <div className="flex group hover:bg-surface-hover transition-colors">
                 <Gutter num={lineInfo.start} />
                 
                 <div style={indentStyle} className="flex-1 flex items-start font-mono text-xs leading-5">
@@ -117,7 +117,7 @@ const XmlNode: React.FC<XmlNodeProps> = ({ node, lineMap, level = 0 }) => {
                     {hasChildren && !isSingleTextNode ? (
                         <button 
                             onClick={(e) => { e.stopPropagation(); setExpanded(!expanded); }} 
-                            className="mr-1 mt-0.5 text-slate-400 hover:text-slate-600 focus:outline-none shrink-0"
+                            className="mr-1 mt-0.5 text-text-muted hover:text-text-main focus:outline-none shrink-0"
                         >
                             {expanded ? <ChevronDown className="w-3 h-3" /> : <ChevronRight className="w-3 h-3" />}
                         </button>
@@ -127,21 +127,21 @@ const XmlNode: React.FC<XmlNodeProps> = ({ node, lineMap, level = 0 }) => {
 
                     {/* Tag Content */}
                     <div className="flex-1 break-all">
-                        <span className="text-blue-700">&lt;{tagName}</span>
+                        <span className="text-syntax-tag">&lt;{tagName}</span>
                         {attributes.map(attr => (
                             <span key={attr.name} className="ml-1">
-                                <span className="text-purple-700">{attr.name}</span>
-                                <span className="text-slate-500">=</span>
-                                <span className="text-green-600">"{attr.value}"</span>
+                                <span className="text-syntax-attr">{attr.name}</span>
+                                <span className="text-text-muted">=</span>
+                                <span className="text-syntax-str">"{attr.value}"</span>
                             </span>
                         ))}
                         
                         {/* Case A: Compact View (<tag>content</tag>) - End tag is on the same line */}
                         {isSingleTextNode && (
                             <span>
-                                <span className="text-blue-700">&gt;</span>
-                                <span className="text-slate-800 font-medium px-0.5">{element.textContent}</span>
-                                <span className="text-blue-700">&lt;/{tagName}&gt;</span>
+                                <span className="text-syntax-tag">&gt;</span>
+                                <span className="text-text-main font-medium px-0.5">{element.textContent}</span>
+                                <span className="text-syntax-tag">&lt;/{tagName}&gt;</span>
                             </span>
                         )}
 
@@ -149,15 +149,15 @@ const XmlNode: React.FC<XmlNodeProps> = ({ node, lineMap, level = 0 }) => {
                         {!isSingleTextNode && (
                             <>
                                 {hasChildren ? (
-                                    <span className="text-blue-700">&gt;</span>
+                                    <span className="text-syntax-tag">&gt;</span>
                                 ) : (
-                                    <span className="text-blue-700"> /&gt;</span>
+                                    <span className="text-syntax-tag"> /&gt;</span>
                                 )}
 
                                 {/* Collapsed Ellipsis */}
                                 {hasChildren && !expanded && (
                                     <span 
-                                        className="text-slate-400 mx-1 cursor-pointer select-none bg-slate-100 px-1 rounded hover:bg-slate-200" 
+                                        className="text-text-muted mx-1 cursor-pointer select-none bg-surface-hover px-1 rounded hover:bg-border/50" 
                                         onClick={() => setExpanded(true)}
                                     >
                                         ...
@@ -166,7 +166,7 @@ const XmlNode: React.FC<XmlNodeProps> = ({ node, lineMap, level = 0 }) => {
 
                                 {/* Collapsed End Tag (Inline) */}
                                 {hasChildren && !expanded && (
-                                    <span className="text-blue-700">&lt;/{tagName}&gt;</span>
+                                    <span className="text-syntax-tag">&lt;/{tagName}&gt;</span>
                                 )}
                             </>
                         )}
@@ -185,12 +185,12 @@ const XmlNode: React.FC<XmlNodeProps> = ({ node, lineMap, level = 0 }) => {
 
             {/* End Line (Closing Tag) - Only if expanded, not compact, and has children */}
             {expanded && !isSingleTextNode && hasChildren && (
-                <div className="flex group hover:bg-slate-50 transition-colors">
+                <div className="flex group hover:bg-surface-hover transition-colors">
                     <Gutter num={lineInfo.end} />
                     <div style={indentStyle} className="flex-1 flex font-mono text-xs leading-5">
                          {/* Spacer for alignment with expander arrow */}
                          <span className="w-4 inline-block shrink-0"></span>
-                         <span className="text-blue-700">&lt;/{tagName}&gt;</span>
+                         <span className="text-syntax-tag">&lt;/{tagName}&gt;</span>
                     </div>
                 </div>
             )}
@@ -231,7 +231,7 @@ const XmlViewer: React.FC<{ xmlString: string }> = ({ xmlString }) => {
     if (!xmlDoc) return null;
 
     return (
-        <div className="w-full h-full overflow-auto bg-white py-2">
+        <div className="w-full h-full overflow-auto bg-surface py-2">
              <XmlNode node={xmlDoc.documentElement} lineMap={lineMap} />
         </div>
     );

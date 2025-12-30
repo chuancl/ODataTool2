@@ -212,11 +212,11 @@ const QueryBuilder: React.FC<QueryBuilderProps> = ({ schema, metadataUrl }) => {
   }, [resultData, drillStack]);
 
   if (!schema.entitySets.length) {
-    return <div className="p-8 text-center text-slate-500">此 OData 服务未定义 EntitySets，无法构建查询。</div>;
+    return <div className="p-8 text-center text-text-muted">此 OData 服务未定义 EntitySets，无法构建查询。</div>;
   }
 
   return (
-    <div className="flex h-full bg-slate-50 overflow-hidden">
+    <div className="flex h-full bg-canvas overflow-hidden">
       {/* --- 左侧配置面板 (Sidebar) --- */}
       <Sidebar 
         schema={schema}
@@ -242,45 +242,45 @@ const QueryBuilder: React.FC<QueryBuilderProps> = ({ schema, metadataUrl }) => {
       />
 
       {/* --- 右侧结果面板 --- */}
-      <div className="flex-1 flex flex-col bg-slate-50 overflow-hidden min-w-0">
+      <div className="flex-1 flex flex-col bg-canvas overflow-hidden min-w-0">
         {/* Header Control Area */}
-        <div className="bg-white border-b border-slate-200 shadow-sm z-10 p-4 shrink-0">
+        <div className="bg-surface border-b border-border shadow-sm z-10 p-4 shrink-0 transition-colors">
            {/* URL & Copy */}
            <div className="flex items-center justify-between mb-3">
-              <h2 className="font-bold text-sm text-slate-800 flex items-center gap-2">
+              <h2 className="font-bold text-sm text-text-main flex items-center gap-2">
                  生成链接
-                 <span className="text-[10px] font-normal text-slate-400 bg-slate-100 px-1.5 py-0.5 rounded">GET</span>
+                 <span className="text-[10px] font-normal text-text-muted bg-canvas px-1.5 py-0.5 rounded border border-border">GET</span>
               </h2>
-              <button onClick={copyToClipboard} className="text-xs flex items-center gap-1 text-slate-500 hover:text-indigo-600 transition px-2 py-1 rounded hover:bg-slate-50">
+              <button onClick={copyToClipboard} className="text-xs flex items-center gap-1 text-text-muted hover:text-brand transition px-2 py-1 rounded hover:bg-surface-hover">
                  <Copy className="w-3.5 h-3.5" /> 复制
               </button>
            </div>
            
            {/* URL Input Box */}
-           <div className="bg-slate-800 rounded-md p-3 relative group mb-4 shadow-inner">
-              <code className="text-xs font-mono text-green-400 break-all whitespace-pre-wrap block max-h-24 overflow-y-auto custom-scrollbar">
+           <div className="bg-surface-hover border border-border rounded-md p-3 relative group mb-4 shadow-inner">
+              <code className="text-xs font-mono text-brand break-all whitespace-pre-wrap block max-h-24 overflow-y-auto custom-scrollbar">
                 {displayUrl}
               </code>
            </div>
 
            {/* Toolbar (Tabs & Action) */}
            <div className="flex items-end justify-between gap-4">
-                <div className="flex bg-slate-100 p-1 rounded-lg border border-slate-200">
+                <div className="flex bg-surface-hover p-1 rounded-lg border border-border">
                     <button 
                         onClick={() => handleTabChange('json')}
-                        className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-all ${activeTab === 'json' ? 'bg-white text-indigo-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+                        className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-all ${activeTab === 'json' ? 'bg-surface text-brand shadow-sm' : 'text-text-muted hover:text-text-main'}`}
                     >
                         <FileJson className="w-3.5 h-3.5" /> JSON
                     </button>
                     <button 
                         onClick={() => handleTabChange('table')}
-                        className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-all ${activeTab === 'table' ? 'bg-white text-indigo-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+                        className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-all ${activeTab === 'table' ? 'bg-surface text-brand shadow-sm' : 'text-text-muted hover:text-text-main'}`}
                     >
                         <TableIcon className="w-3.5 h-3.5" /> Table
                     </button>
                     <button 
                         onClick={() => handleTabChange('xml')}
-                        className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-all ${activeTab === 'xml' ? 'bg-white text-orange-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+                        className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-all ${activeTab === 'xml' ? 'bg-surface text-orange-600 shadow-sm' : 'text-text-muted hover:text-text-main'}`}
                     >
                         <FileCode className="w-3.5 h-3.5" /> XML
                     </button>
@@ -290,7 +290,7 @@ const QueryBuilder: React.FC<QueryBuilderProps> = ({ schema, metadataUrl }) => {
                     <button 
                         onClick={() => executeQuery()} 
                         disabled={loading || !generatedUrl}
-                        className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2 rounded-md text-sm font-bold transition disabled:opacity-50 disabled:cursor-not-allowed shadow-sm hover:shadow active:translate-y-px"
+                        className="flex items-center gap-2 bg-brand hover:bg-brand-hover text-brand-fg px-5 py-2 rounded-md text-sm font-bold transition disabled:opacity-50 disabled:cursor-not-allowed shadow-sm hover:shadow active:translate-y-px"
                     >
                         {loading ? (
                         <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
@@ -304,29 +304,29 @@ const QueryBuilder: React.FC<QueryBuilderProps> = ({ schema, metadataUrl }) => {
         </div>
 
         {/* Result Area */}
-        <div className="flex-1 overflow-hidden relative bg-slate-50/50 flex flex-col">
+        <div className="flex-1 overflow-hidden relative bg-canvas flex flex-col">
            {error && (
-             <div className="m-4 p-4 bg-red-50 border border-red-100 rounded-lg text-red-600 text-sm flex items-start gap-2 animate-in fade-in slide-in-from-top-2">
+             <div className="m-4 p-4 bg-red-50/50 border border-red-200 rounded-lg text-red-600 text-sm flex items-start gap-2 animate-in fade-in slide-in-from-top-2">
                 <div className="mt-0.5 flex-shrink-0"><X className="w-4 h-4" /></div>
                 <div className="whitespace-pre-wrap font-mono break-all">{error}</div>
              </div>
            )}
 
            {!error && !resultData && !resultXml && !loading && (
-             <div className="h-full flex flex-col items-center justify-center text-slate-300 select-none">
-                <Play className="w-16 h-16 mb-4 opacity-10" />
-                <p className="text-sm font-medium">点击 "Run Query" 获取数据</p>
+             <div className="h-full flex flex-col items-center justify-center text-text-muted/30 select-none">
+                <Play className="w-16 h-16 mb-4 opacity-50" />
+                <p className="text-sm font-medium text-text-muted">点击 "Run Query" 获取数据</p>
              </div>
            )}
 
            {(resultData || resultXml) && (
-               <div className="flex-1 overflow-auto h-full w-full bg-white relative">
+               <div className="flex-1 overflow-auto h-full w-full bg-surface relative">
                    {/* JSON View */}
                    {activeTab === 'json' && resultData && (
                        <div className="h-full w-full overflow-auto">
-                            <div className="px-4 py-2 border-b border-slate-100 bg-slate-50 text-xs font-bold text-slate-500 flex justify-between sticky top-0 z-10 shadow-sm">
+                            <div className="px-4 py-2 border-b border-border bg-canvas/50 text-xs font-bold text-text-muted flex justify-between sticky top-0 z-10 backdrop-blur-sm">
                                 <span>JSON Tree</span>
-                                {resultData['@odata.count'] && <span className="text-indigo-600">Total: {resultData['@odata.count']}</span>}
+                                {resultData['@odata.count'] && <span className="text-brand">Total: {resultData['@odata.count']}</span>}
                             </div>
                             <div className="p-4">
                                 <JsonNode value={resultData} />
@@ -338,16 +338,16 @@ const QueryBuilder: React.FC<QueryBuilderProps> = ({ schema, metadataUrl }) => {
                    {activeTab === 'table' && resultData && (
                        <div className="flex flex-col h-full w-full">
                             {drillStack.length > 0 && (
-                                <div className="flex items-center gap-2 p-2 bg-indigo-50 border-b border-indigo-100 text-xs overflow-x-auto whitespace-nowrap sticky top-0 z-20 shadow-sm">
-                                    <button onClick={() => handleDrillUp(-1)} className="hover:bg-indigo-100 p-1.5 rounded text-indigo-700 font-bold flex items-center gap-1 transition-colors">
+                                <div className="flex items-center gap-2 p-2 bg-brand/5 border-b border-brand/20 text-xs overflow-x-auto whitespace-nowrap sticky top-0 z-20 shadow-sm">
+                                    <button onClick={() => handleDrillUp(-1)} className="hover:bg-brand/10 p-1.5 rounded text-brand font-bold flex items-center gap-1 transition-colors">
                                         <ArrowLeft className="w-3.5 h-3.5" /> Root
                                     </button>
                                     {drillStack.map((item, idx) => (
                                         <React.Fragment key={idx}>
-                                            <ChevronRight className="w-3 h-3 text-indigo-300" />
+                                            <ChevronRight className="w-3 h-3 text-brand/40" />
                                             <button 
                                                 onClick={() => handleDrillUp(idx)}
-                                                className={`px-2 py-1 rounded transition-colors ${idx === drillStack.length - 1 ? 'bg-white shadow-sm font-bold text-indigo-800' : 'hover:bg-indigo-100 text-indigo-600'}`}
+                                                className={`px-2 py-1 rounded transition-colors ${idx === drillStack.length - 1 ? 'bg-surface shadow-sm font-bold text-brand' : 'hover:bg-brand/10 text-brand'}`}
                                             >
                                                 {item.title}
                                             </button>
@@ -368,7 +368,7 @@ const QueryBuilder: React.FC<QueryBuilderProps> = ({ schema, metadataUrl }) => {
                    {/* XML View */}
                    {activeTab === 'xml' && resultXml && (
                         <div className="h-full w-full overflow-auto">
-                            <div className="px-4 py-2 border-b border-slate-100 bg-slate-50 text-xs font-bold text-slate-500 sticky top-0 z-10 shadow-sm">
+                            <div className="px-4 py-2 border-b border-border bg-canvas/50 text-xs font-bold text-text-muted sticky top-0 z-10 backdrop-blur-sm">
                                 <span>XML Tree</span>
                             </div>
                             <XmlViewer xmlString={resultXml} />

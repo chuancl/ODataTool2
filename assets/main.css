@@ -2,11 +2,100 @@
 @tailwind components;
 @tailwind utilities;
 
+@layer base {
+  :root {
+    /* Default (Light) - Indigo/Slate */
+    --c-canvas: 248 250 252; /* slate-50 */
+    --c-surface: 255 255 255; /* white */
+    --c-surface-hover: 241 245 249; /* slate-100 */
+    --c-border: 226 232 240; /* slate-200 */
+    --c-text-main: 30 41 59; /* slate-800 */
+    --c-text-muted: 100 116 139; /* slate-500 */
+    --c-brand: 79 70 229; /* indigo-600 */
+    --c-brand-hover: 67 56 202; /* indigo-700 */
+    --c-brand-fg: 255 255 255;
+    
+    /* Syntax */
+    --c-syn-key: 126 34 206; /* purple-700 */
+    --c-syn-str: 22 163 74; /* green-600 */
+    --c-syn-num: 37 99 235; /* blue-600 */
+    --c-syn-bool: 234 88 12; /* orange-600 */
+    --c-syn-tag: 29 78 216; /* blue-700 */
+    --c-syn-attr: 126 34 206; /* purple-700 */
+    --c-syn-comment: 148 163 184; /* slate-400 */
+  }
+
+  [data-theme='dark'] {
+    /* Dark - Midnight */
+    --c-canvas: 15 23 42; /* slate-900 */
+    --c-surface: 30 41 59; /* slate-800 */
+    --c-surface-hover: 51 65 85; /* slate-700 */
+    --c-border: 51 65 85; /* slate-700 */
+    --c-text-main: 241 245 249; /* slate-100 */
+    --c-text-muted: 148 163 184; /* slate-400 */
+    --c-brand: 99 102 241; /* indigo-500 */
+    --c-brand-hover: 129 140 248; /* indigo-400 */
+    --c-brand-fg: 255 255 255;
+
+    /* Syntax */
+    --c-syn-key: 192 132 252; /* purple-400 */
+    --c-syn-str: 74 222 128; /* green-400 */
+    --c-syn-num: 96 165 250; /* blue-400 */
+    --c-syn-bool: 251 146 60; /* orange-400 */
+    --c-syn-tag: 96 165 250; /* blue-400 */
+    --c-syn-attr: 192 132 252; /* purple-400 */
+    --c-syn-comment: 100 116 139; /* slate-500 */
+  }
+
+  [data-theme='warm'] {
+    /* Warm - Stone/Orange */
+    --c-canvas: 250 250 249; /* stone-50 */
+    --c-surface: 255 255 255;
+    --c-surface-hover: 245 245 244; /* stone-100 */
+    --c-border: 231 229 228; /* stone-200 */
+    --c-text-main: 41 37 36; /* stone-800 */
+    --c-text-muted: 120 113 108; /* stone-500 */
+    --c-brand: 234 88 12; /* orange-600 */
+    --c-brand-hover: 194 65 12; /* orange-700 */
+    --c-brand-fg: 255 255 255;
+    
+    /* Syntax - shift slightly warmer */
+    --c-syn-key: 162 28 175; /* fuchsia-700 */
+    --c-syn-str: 21 128 61; /* green-700 */
+    --c-syn-num: 30 58 138; /* blue-800 */
+    --c-syn-bool: 180 83 9; /* amber-700 */
+    --c-syn-tag: 30 58 138;
+    --c-syn-attr: 162 28 175;
+  }
+}
+
 body {
   margin: 0;
   padding: 0;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
   width: 100vw;
   height: 100vh;
   overflow: hidden;
+  background-color: rgb(var(--c-canvas));
+  color: rgb(var(--c-text-main));
+}
+
+/* Custom Scrollbar for nicer look in all themes */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-track {
+  background: transparent; 
+}
+::-webkit-scrollbar-corner {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: rgb(var(--c-border));
+  border-radius: 5px;
+  border: 2px solid rgb(var(--c-canvas)); /* creates padding effect */
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgb(var(--c-text-muted));
 }
