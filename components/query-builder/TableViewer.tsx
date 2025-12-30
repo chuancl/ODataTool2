@@ -9,8 +9,7 @@ import {
     Header
 } from '@tanstack/react-table';
 import { ChevronRight, Braces, Table as TableIcon, ArrowDown, ArrowUp, ArrowUpDown } from 'lucide-react';
-import { Chip } from '@heroui/chip';
-import { Link } from '@heroui/link';
+import { Chip, Link } from '@heroui/react';
 
 // --- Cell Renderer Component ---
 
@@ -225,7 +224,7 @@ const DataTable: React.FC<DataTableProps> = ({ data, onDrillDown, columnTypes })
                                             }`}
                                         />
                                     )}
-                                </th>
+                                th>
                             ))}
                         </tr>
                     ))}

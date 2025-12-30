@@ -1,16 +1,24 @@
 import React, { useEffect, useState } from 'react';
 import ReactDOM from 'react-dom/client';
 import { browser } from 'wxt/browser';
-import { HeroUIProvider } from '@heroui/system';
-import { Navbar, NavbarBrand, NavbarContent, NavbarItem } from '@heroui/navbar';
-import { Button } from '@heroui/button';
-import { Spinner } from '@heroui/spinner';
-import { Card, CardBody } from '@heroui/card';
-import { Tabs, Tab } from '@heroui/tabs';
-import { Listbox, ListboxItem } from '@heroui/listbox';
-import { ScrollShadow } from '@heroui/scroll-shadow';
-import { Chip } from '@heroui/chip';
-import { Divider } from '@heroui/divider';
+import { 
+    HeroUIProvider,
+    Navbar, 
+    NavbarBrand, 
+    NavbarContent, 
+    NavbarItem,
+    Button,
+    Spinner,
+    Card, 
+    CardBody,
+    Tabs, 
+    Tab,
+    Listbox, 
+    ListboxItem,
+    ScrollShadow,
+    Chip,
+    Divider
+} from '@heroui/react';
 import { 
     Database, 
     RefreshCw, 

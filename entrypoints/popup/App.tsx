@@ -1,12 +1,17 @@
 import React, { useState, useEffect } from 'react';
-import { Button } from '@heroui/button';
-import { Input } from '@heroui/input';
-import { Tabs, Tab } from '@heroui/tabs';
-import { Card, CardBody } from '@heroui/card';
-import { Switch } from '@heroui/switch';
-import { Listbox, ListboxItem } from '@heroui/listbox';
-import { ScrollShadow } from '@heroui/scroll-shadow';
-import { Divider } from '@heroui/divider';
+import { 
+    Button,
+    Input,
+    Tabs, 
+    Tab,
+    Card, 
+    CardBody,
+    Switch,
+    Listbox, 
+    ListboxItem,
+    ScrollShadow,
+    Divider
+} from '@heroui/react';
 import { Database, FileUp, Search, Settings, Plus, Trash2, Power, ShieldCheck, Link as LinkIcon } from 'lucide-react';
 import { browser } from 'wxt/browser';
 import { AppSettings, DEFAULT_SETTINGS } from '../../types';

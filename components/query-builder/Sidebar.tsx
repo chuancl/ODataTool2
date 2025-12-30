@@ -1,11 +1,16 @@
 import React from 'react';
-import { Select, SelectItem } from '@heroui/select';
-import { Accordion, AccordionItem } from '@heroui/accordion';
-import { CheckboxGroup, Checkbox } from '@heroui/checkbox';
-import { Input } from '@heroui/input';
-import { Switch } from '@heroui/switch';
-import { Badge } from '@heroui/badge';
-import { ScrollShadow } from '@heroui/scroll-shadow';
+import { 
+    Select, 
+    SelectItem,
+    Accordion, 
+    AccordionItem,
+    CheckboxGroup, 
+    Checkbox,
+    Input,
+    Switch,
+    Badge,
+    ScrollShadow
+} from '@heroui/react';
 import { 
     Database, 
     LayoutGrid, 
