@@ -58,7 +58,6 @@ const ODataViewerApp: React.FC = () => {
   // 切换主题 class
   useEffect(() => {
     const root = document.documentElement;
-    // 移除之前的类，确保干净切换
     root.classList.remove('light', 'dark');
     root.classList.add(theme);
     root.style.colorScheme = theme;
@@ -135,7 +134,6 @@ const ODataViewerApp: React.FC = () => {
 
   return (
     <HeroUIProvider>
-        {/* 外层包裹 div 显式应用 background 和 foreground，确保 CSS 变量生效 */}
         <div className={`flex flex-col h-screen w-full bg-background text-foreground transition-colors duration-200 overflow-hidden ${theme}`}>
         {/* 顶部导航栏 */}
         <Navbar isBordered maxWidth="full" height="3.5rem" classNames={{ wrapper: "px-4" }}>
@@ -162,6 +160,7 @@ const ODataViewerApp: React.FC = () => {
                         size="sm"
                         color="primary"
                         variant="solid"
+                        aria-label="View Mode"
                         classNames={{
                             tabList: "bg-default-100/50 p-1 border border-default-200",
                             cursor: "shadow-sm",
@@ -174,10 +173,10 @@ const ODataViewerApp: React.FC = () => {
             </NavbarContent>
 
             <NavbarContent justify="end">
-                <Button isIconOnly variant="light" onPress={cycleTheme} radius="full">
+                <Button isIconOnly variant="light" onPress={cycleTheme} radius="full" aria-label="Toggle Theme">
                     {theme === 'light' ? <Moon className="w-5 h-5" /> : <Sun className="w-5 h-5" />}
                 </Button>
-                <Button isIconOnly variant="light" onPress={() => window.location.reload()} radius="full">
+                <Button isIconOnly variant="light" onPress={() => window.location.reload()} radius="full" aria-label="Refresh">
                     <RefreshCw className="w-5 h-5" />
                 </Button>
             </NavbarContent>
@@ -233,6 +232,7 @@ const ODataViewerApp: React.FC = () => {
                                                 key={entity.name} 
                                                 startContent={<Box className={selectedEntity === entity.name ? "text-primary w-4 h-4" : "text-default-400 w-4 h-4"} />}
                                                 className={selectedEntity === entity.name ? "bg-primary-50 text-primary font-medium" : "text-default-600"}
+                                                textValue={entity.name}
                                             >
                                                 {entity.name}
                                             </ListboxItem>

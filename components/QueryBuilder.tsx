@@ -213,6 +213,7 @@ const QueryBuilder: React.FC<QueryBuilderProps> = ({ schema, metadataUrl, theme 
                     size="sm" 
                     onPress={() => setShowConfig(!showConfig)}
                     className="text-default-500"
+                    aria-label="Toggle Sidebar"
                 >
                     {showConfig ? <PanelLeftClose className="w-5 h-5" /> : <PanelLeftOpen className="w-5 h-5" />}
                 </Button>
@@ -232,13 +233,13 @@ const QueryBuilder: React.FC<QueryBuilderProps> = ({ schema, metadataUrl, theme 
                         endContent={
                             <div className="flex items-center gap-1">
                                 <Tooltip content="Copy URL">
-                                    <Button isIconOnly size="sm" variant="light" className="h-6 w-6 min-w-4" onPress={copyToClipboard}>
+                                    <Button isIconOnly size="sm" variant="light" className="h-6 w-6 min-w-4" onPress={copyToClipboard} aria-label="Copy URL">
                                         <Copy className="w-3.5 h-3.5 text-default-400" />
                                     </Button>
                                 </Tooltip>
                                 <Divider orientation="vertical" className="h-4" />
                                 <Tooltip content="Open in New Tab">
-                                    <Button isIconOnly size="sm" variant="light" className="h-6 w-6 min-w-4" onPress={() => window.open(urlInput, '_blank')}>
+                                    <Button isIconOnly size="sm" variant="light" className="h-6 w-6 min-w-4" onPress={() => window.open(urlInput, '_blank')} aria-label="Open New Tab">
                                         <ExternalLink className="w-3.5 h-3.5 text-default-400" />
                                     </Button>
                                 </Tooltip>
@@ -329,7 +330,7 @@ const QueryBuilder: React.FC<QueryBuilderProps> = ({ schema, metadataUrl, theme 
                             <div className="absolute top-4 left-4 right-4 z-20 p-4 bg-danger-50 dark:bg-danger-900/20 border border-danger-200 dark:border-danger-800 rounded-lg text-danger text-sm flex items-start gap-3 shadow-lg">
                                 <X className="w-5 h-5 shrink-0 mt-0.5" />
                                 <div className="font-mono break-all flex-1">{error}</div>
-                                <Button isIconOnly size="sm" variant="light" color="danger" onPress={() => setError(null)}><X className="w-4 h-4"/></Button>
+                                <Button isIconOnly size="sm" variant="light" color="danger" onPress={() => setError(null)} aria-label="Dismiss Error"><X className="w-4 h-4"/></Button>
                             </div>
                         )}
 
@@ -351,7 +352,7 @@ const QueryBuilder: React.FC<QueryBuilderProps> = ({ schema, metadataUrl, theme 
                                 <div className="h-full flex flex-col">
                                     {drillStack.length > 0 && (
                                         <div className="flex items-center gap-2 p-2 bg-default-50 border-b border-divider text-tiny shrink-0 sticky top-0 z-20">
-                                            <Button isIconOnly size="sm" variant="flat" onPress={() => setDrillStack([])} className="h-6 w-6">
+                                            <Button isIconOnly size="sm" variant="flat" onPress={() => setDrillStack([])} className="h-6 w-6" aria-label="Go Back">
                                                 <ArrowLeft className="w-3.5 h-3.5" />
                                             </Button>
                                             <span className="text-default-500">Root</span>
