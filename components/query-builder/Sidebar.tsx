@@ -8,7 +8,6 @@ import {
     Checkbox,
     Input,
     Switch,
-    Badge,
     ScrollShadow
 } from '@heroui/react';
 import { 
@@ -17,8 +16,7 @@ import {
     Layers, 
     Filter, 
     ArrowUpDown, 
-    Hash, 
-    Check 
+    Hash
 } from 'lucide-react';
 import { ODataSchema, ODataEntity } from '../../types';
 
@@ -109,13 +107,18 @@ const Sidebar: React.FC<SidebarProps> = ({
                             startContent={<LayoutGrid className="w-4 h-4 text-primary" />}
                         >
                             <ScrollShadow className="max-h-[200px] border border-divider rounded-medium p-2 bg-default-50">
-                                <CheckboxGroup size="sm" classNames={{ wrapper: "gap-1" }}>
+                                <CheckboxGroup 
+                                    size="sm" 
+                                    classNames={{ wrapper: "gap-1" }}
+                                    aria-label="Select Columns"
+                                >
                                     {currentEntity.properties.map(p => (
                                         <Checkbox 
                                             key={p.name} 
                                             value={p.name}
                                             isSelected={selectedProps.has(p.name)}
                                             onValueChange={() => toggleSelection(selectedProps, p.name, onPropChange)}
+                                            aria-label={`Select column ${p.name}`}
                                         >
                                             <span className={`text-tiny ${selectedProps.has(p.name) ? "text-foreground font-medium" : "text-default-500"}`}>
                                                 {p.name}
@@ -142,6 +145,7 @@ const Sidebar: React.FC<SidebarProps> = ({
                                             isSelected={expandProps.has(np.name)}
                                             onValueChange={() => toggleSelection(expandProps, np.name, onExpandChange)}
                                             className="w-full max-w-full"
+                                            aria-label={`Expand ${np.name}`}
                                         >
                                             <span className="text-tiny">{np.name}</span>
                                         </Checkbox>
