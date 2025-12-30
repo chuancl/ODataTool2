@@ -6,18 +6,16 @@ import {
     Navbar, 
     NavbarBrand, 
     NavbarContent, 
-    NavbarItem,
+    Tabs, 
+    Tab,
     Button,
     Spinner,
     Card, 
     CardBody,
-    Tabs, 
-    Tab,
     Listbox, 
     ListboxItem,
     ScrollShadow,
     Chip,
-    Divider
 } from '@heroui/react';
 import { 
     Database, 
@@ -60,13 +58,10 @@ const ODataViewerApp: React.FC = () => {
   // 切换主题 class
   useEffect(() => {
     const root = document.documentElement;
-    if (theme === 'dark') {
-        root.classList.add('dark');
-        root.style.colorScheme = 'dark';
-    } else {
-        root.classList.remove('dark');
-        root.style.colorScheme = 'light';
-    }
+    // 移除之前的类，确保干净切换
+    root.classList.remove('light', 'dark');
+    root.classList.add(theme);
+    root.style.colorScheme = theme;
     localStorage.setItem('odata-viewer-theme', theme);
   }, [theme]);
 
@@ -140,7 +135,8 @@ const ODataViewerApp: React.FC = () => {
 
   return (
     <HeroUIProvider>
-        <div className="flex flex-col h-screen bg-background text-foreground transition-colors duration-200 overflow-hidden">
+        {/* 外层包裹 div 显式应用 background 和 foreground，确保 CSS 变量生效 */}
+        <div className={`flex flex-col h-screen w-full bg-background text-foreground transition-colors duration-200 overflow-hidden ${theme}`}>
         {/* 顶部导航栏 */}
         <Navbar isBordered maxWidth="full" height="3.5rem" classNames={{ wrapper: "px-4" }}>
             <NavbarBrand className="gap-3 max-w-fit">
