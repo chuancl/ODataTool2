@@ -1,5 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import { Database, FileUp, Activity, Search, Settings, Plus, Trash2, Power, ShieldCheck } from 'lucide-react';
+import { Button } from '@heroui/button';
+import { Input } from '@heroui/input';
+import { Tabs, Tab } from '@heroui/tabs';
+import { Card, CardBody } from '@heroui/card';
+import { Switch } from '@heroui/switch';
+import { Listbox, ListboxItem } from '@heroui/listbox';
+import { ScrollShadow } from '@heroui/scroll-shadow';
+import { Divider } from '@heroui/divider';
+import { Database, FileUp, Search, Settings, Plus, Trash2, Power, ShieldCheck, Link as LinkIcon } from 'lucide-react';
 import { browser } from 'wxt/browser';
 import { AppSettings, DEFAULT_SETTINGS } from '../../types';
 import { getSettings, saveSettings } from '../../services/storageService';
@@ -62,123 +70,141 @@ const App: React.FC = () => {
   };
 
   return (
-    <div className="w-full h-full bg-slate-50 text-slate-800 flex flex-col font-sans">
-      <header className="bg-indigo-600 text-white p-4 shadow-md flex items-center justify-between">
-        <div className="flex items-center gap-2">
+    <div className="w-full h-full flex flex-col font-sans">
+      <header className="bg-primary p-4 shadow-md flex items-center justify-between z-10">
+        <div className="flex items-center gap-2 text-white">
            <Database className="w-6 h-6" />
            <h1 className="font-bold text-lg">OData Explorer</h1>
         </div>
-        <div className="flex gap-2">
-            <button 
-                onClick={() => setActiveTab(activeTab === 'home' ? 'settings' : 'home')}
-                className={`p-1.5 rounded-full transition ${activeTab === 'settings' ? 'bg-indigo-700' : 'hover:bg-indigo-500'}`}
-                title="设置"
-            >
-                <Settings className="w-5 h-5" />
-            </button>
-        </div>
+        <Button 
+            isIconOnly 
+            variant="light" 
+            className="text-white"
+            onPress={() => setActiveTab(activeTab === 'home' ? 'settings' : 'home')}
+        >
+            <Settings className="w-5 h-5" />
+        </Button>
       </header>
 
-      <main className="flex-1 overflow-y-auto">
-        {activeTab === 'home' ? (
-            <div className="p-5 space-y-6">
+      <div className="flex-1 overflow-hidden relative">
+          {/* 使用绝对定位切换内容，模拟页面切换 */}
+          <div className={`absolute inset-0 p-5 transition-transform duration-300 ${activeTab === 'home' ? 'translate-x-0' : '-translate-x-full opacity-0 pointer-events-none'}`}>
+             <div className="space-y-6">
                 {/* 快捷开关 */}
-                <div className={`flex items-center justify-between p-4 rounded-xl border transition-colors ${settings.enableGlobal ? 'bg-white border-green-200 shadow-sm' : 'bg-slate-100 border-slate-200'}`}>
-                    <div className="flex items-center gap-3">
-                        <div className={`p-2 rounded-full ${settings.enableGlobal ? 'bg-green-100 text-green-600' : 'bg-slate-200 text-slate-400'}`}>
-                            <Power className="w-5 h-5" />
+                <Card className={settings.enableGlobal ? "border-success-200 bg-success-50" : "bg-default-50"} shadow="sm">
+                    <CardBody className="flex flex-row items-center justify-between p-4 overflow-hidden">
+                        <div className="flex items-center gap-3">
+                            <div className={`p-2 rounded-full ${settings.enableGlobal ? 'bg-success text-white' : 'bg-default-200 text-default-500'}`}>
+                                <Power className="w-5 h-5" />
+                            </div>
+                            <div>
+                                <h3 className="font-bold text-small">自动检测</h3>
+                                <p className="text-tiny text-default-500">{settings.enableGlobal ? '已开启' : '已暂停'}</p>
+                            </div>
                         </div>
-                        <div>
-                            <h3 className="font-bold text-sm text-slate-700">自动检测</h3>
-                            <p className="text-xs text-slate-500">{settings.enableGlobal ? '已开启' : '已暂停'}</p>
-                        </div>
-                    </div>
-                    <label className="relative inline-flex items-center cursor-pointer">
-                        <input type="checkbox" className="sr-only peer" checked={settings.enableGlobal} onChange={(e) => updateSetting('enableGlobal', e.target.checked)} />
-                        <div className="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-green-500"></div>
-                    </label>
-                </div>
+                        <Switch 
+                            isSelected={settings.enableGlobal} 
+                            color="success"
+                            onValueChange={(val) => updateSetting('enableGlobal', val)}
+                        />
+                    </CardBody>
+                </Card>
 
-                <div className="bg-white p-4 rounded-xl shadow-sm border border-slate-200">
-                    <label className="block text-sm font-semibold text-slate-700 mb-2 flex items-center gap-2">
+                <div className="space-y-2">
+                    <label className="text-small font-semibold flex items-center gap-2 text-default-600">
                         <Search className="w-4 h-4" />
                         解析在线 OData 服务
                     </label>
                     <div className="flex gap-2">
-                        <input
-                        type="text"
-                        value={inputUrl}
-                        onChange={(e) => setInputUrl(e.target.value)}
-                        placeholder="输入 URL"
-                        className="flex-1 px-3 py-2 border border-slate-300 rounded-md text-sm focus:ring-2 focus:ring-indigo-500 outline-none"
+                        <Input
+                            size="sm"
+                            placeholder="输入 URL"
+                            value={inputUrl}
+                            onValueChange={setInputUrl}
+                            className="flex-1"
+                            startContent={<LinkIcon className="w-3.5 h-3.5 text-default-400" />}
                         />
-                        <button
-                        onClick={handleUrlParse}
-                        className="bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700 transition whitespace-nowrap"
+                        <Button
+                            color="primary"
+                            size="sm"
+                            onPress={handleUrlParse}
+                            className="font-medium"
                         >
-                        解析
-                        </button>
+                            解析
+                        </Button>
                     </div>
                 </div>
 
-                <div className="flex items-center justify-center text-slate-400 text-xs font-medium">- 或 -</div>
+                <Divider className="my-2" />
 
-                <div className="bg-white p-4 rounded-xl shadow-sm border border-slate-200">
-                    <label className="block text-sm font-semibold text-slate-700 mb-2 flex items-center gap-2">
+                <div className="space-y-2">
+                    <label className="text-small font-semibold flex items-center gap-2 text-default-600">
                         <FileUp className="w-4 h-4" />
                         上传 Metadata 文件
                     </label>
-                    <label className="flex flex-col items-center justify-center w-full h-24 border-2 border-dashed border-slate-300 rounded-lg cursor-pointer hover:bg-slate-50 transition">
+                    <label className="flex flex-col items-center justify-center w-full h-24 border-2 border-dashed border-default-300 rounded-large cursor-pointer hover:bg-default-100 hover:border-default-400 transition-colors group">
                         <div className="flex flex-col items-center justify-center pt-5 pb-6">
-                        <p className="text-sm text-slate-500">点击上传 .xml / .edmx</p>
+                            <FileUp className="w-6 h-6 text-default-400 mb-2 group-hover:text-default-600 transition-colors" />
+                            <p className="text-tiny text-default-500 group-hover:text-default-700">点击上传 .xml / .edmx</p>
                         </div>
                         <input type="file" className="hidden" accept=".xml,.edmx,.txt" onChange={handleFileUpload} />
                     </label>
                 </div>
-            </div>
-        ) : (
-            <div className="p-5 space-y-6">
-                <div>
-                    <h2 className="font-bold text-slate-800 text-lg mb-2 flex items-center gap-2">
-                        <ShieldCheck className="w-5 h-5 text-indigo-600" />
+             </div>
+          </div>
+
+          <div className={`absolute inset-0 p-5 transition-transform duration-300 ${activeTab === 'settings' ? 'translate-x-0' : 'translate-x-full opacity-0 pointer-events-none'}`}>
+             <div className="h-full flex flex-col">
+                <div className="mb-4">
+                    <h2 className="font-bold text-large mb-1 flex items-center gap-2">
+                        <ShieldCheck className="w-5 h-5 text-primary" />
                         白名单管理
                     </h2>
-                    <p className="text-xs text-slate-500 mb-4">即便自动检测关闭，白名单内的网址仍会被插件自动接管。</p>
-                    
-                    <div className="flex gap-2 mb-4">
-                        <input 
-                            type="text" 
-                            className="flex-1 border border-slate-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-indigo-500"
-                            placeholder="输入域名或关键字"
-                            value={whitelistInput}
-                            onChange={(e) => setWhitelistInput(e.target.value)}
-                        />
-                        <button onClick={addWhitelist} className="bg-indigo-100 text-indigo-700 p-2 rounded-lg hover:bg-indigo-200">
-                            <Plus className="w-5 h-5" />
-                        </button>
-                    </div>
-
-                    <div className="space-y-2">
-                        {settings.whitelist.length === 0 && (
-                            <div className="text-center py-6 text-slate-400 text-sm italic bg-slate-100 rounded-lg border border-slate-200 border-dashed">
-                                暂无白名单
-                            </div>
-                        )}
-                        {settings.whitelist.map((item, idx) => (
-                            <div key={idx} className="flex items-center justify-between bg-white p-3 rounded-lg border border-slate-200 shadow-sm text-sm">
-                                <span className="truncate flex-1 font-mono text-slate-600">{item}</span>
-                                <button onClick={() => removeWhitelist(idx)} className="text-slate-400 hover:text-red-500 ml-2">
-                                    <Trash2 className="w-4 h-4" />
-                                </button>
-                            </div>
-                        ))}
-                    </div>
+                    <p className="text-tiny text-default-500">即便自动检测关闭，白名单内的网址仍会被插件自动接管。</p>
                 </div>
-            </div>
-        )}
-      </main>
+                
+                <div className="flex gap-2 mb-4">
+                    <Input 
+                        size="sm"
+                        placeholder="输入域名或关键字"
+                        value={whitelistInput}
+                        onValueChange={setWhitelistInput}
+                    />
+                    <Button isIconOnly size="sm" color="primary" onPress={addWhitelist}>
+                        <Plus className="w-5 h-5" />
+                    </Button>
+                </div>
 
-      <footer className="p-3 text-center text-xs text-slate-400 border-t border-slate-200 bg-white">
+                <ScrollShadow className="flex-1 rounded-medium border border-divider">
+                    <Listbox 
+                        aria-label="Whitelist" 
+                        variant="flat"
+                        emptyContent="暂无白名单"
+                    >
+                        {settings.whitelist.map((item, idx) => (
+                            <ListboxItem 
+                                key={idx}
+                                endContent={
+                                    <Button isIconOnly size="sm" variant="light" color="danger" onPress={() => removeWhitelist(idx)}>
+                                        <Trash2 className="w-4 h-4" />
+                                    </Button>
+                                }
+                                textValue={item}
+                            >
+                                <span className="font-mono text-small">{item}</span>
+                            </ListboxItem>
+                        ))}
+                    </Listbox>
+                </ScrollShadow>
+                
+                <Button size="sm" variant="light" onPress={() => setActiveTab('home')} className="mt-4">
+                    返回
+                </Button>
+             </div>
+          </div>
+      </div>
+
+      <footer className="p-3 text-center text-[10px] text-default-400 border-t border-divider bg-content1">
         OData Explorer v1.2
       </footer>
     </div>

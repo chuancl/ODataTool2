@@ -1,5 +1,29 @@
-import React, { useState, useEffect, useMemo, useRef } from 'react';
-import { Play, Copy, X, Table as TableIcon, FileJson, FileCode, ArrowLeft, ChevronRight, ExternalLink, Settings2, SlidersHorizontal, PanelLeftClose, PanelLeftOpen, Zap } from 'lucide-react';
+import React, { useState, useEffect, useMemo } from 'react';
+import { Button } from '@heroui/button';
+import { Input } from '@heroui/input';
+import { Tabs, Tab } from '@heroui/tabs';
+import { Card } from '@heroui/card';
+import { Tooltip } from '@heroui/tooltip';
+import { Snippet } from '@heroui/snippet';
+import { Chip } from '@heroui/chip';
+import { Spinner } from '@heroui/spinner';
+import { Divider } from '@heroui/divider';
+import { 
+    Play, 
+    Copy, 
+    X, 
+    Table as TableIcon, 
+    FileJson, 
+    FileCode, 
+    ArrowLeft, 
+    ChevronRight, 
+    ExternalLink, 
+    Settings2, 
+    PanelLeftClose, 
+    PanelLeftOpen, 
+    Zap,
+    Link
+} from 'lucide-react';
 import { ODataSchema } from '../types';
 import { normalizeODataResponse } from './query-builder/utils';
 import Sidebar from './query-builder/Sidebar';
@@ -106,11 +130,6 @@ const QueryBuilder: React.FC<QueryBuilderProps> = ({ schema, metadataUrl, theme 
       }
   }, [generatedUrl, isUrlDirty]);
 
-  const handleUrlInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-      setUrlInput(e.target.value);
-      setIsUrlDirty(true);
-  };
-
   const executeQuery = async (forceFormat?: 'json' | 'xml') => {
     const targetUrl = urlInput;
     if (!targetUrl) return;
@@ -165,27 +184,12 @@ const QueryBuilder: React.FC<QueryBuilderProps> = ({ schema, metadataUrl, theme 
 
   const copyToClipboard = () => navigator.clipboard.writeText(urlInput);
 
-  const TabButton = ({ id, label, icon: Icon }: { id: TabType, label: string, icon: any }) => (
-      <button 
-        onClick={() => setActiveTab(id)}
-        className={`relative flex items-center gap-2 px-4 py-2.5 text-sm font-medium transition-colors ${
-            activeTab === id 
-            ? 'text-main' 
-            : 'text-muted hover:text-sec'
-        }`}
-      >
-          <Icon className="w-4 h-4" />
-          {label}
-          {activeTab === id && (
-              <span className="absolute bottom-0 left-0 w-full h-0.5 bg-[rgb(var(--c-accent))] rounded-t-full"></span>
-          )}
-      </button>
-  );
-
   return (
-    <div className="flex h-full w-full bg-app text-main font-sans overflow-hidden">
+    <div className="flex h-full w-full bg-default-50 overflow-hidden">
         {/* Left Sidebar (Config) */}
-        <div className={`shrink-0 border-r border-base bg-sidebar transition-all duration-300 ease-in-out flex flex-col ${showConfig ? 'w-[280px]' : 'w-0 overflow-hidden opacity-0'}`}>
+        <div 
+            className={`shrink-0 border-r border-divider bg-background transition-all duration-300 ease-in-out flex flex-col ${showConfig ? 'w-[300px]' : 'w-0 overflow-hidden opacity-0'}`}
+        >
              <Sidebar 
                 schema={schema} selectedSet={selectedSet} onSetChange={setSelectedSet} currentEntity={currentEntity}
                 selectedProps={selectedProps} onPropChange={setSelectedProps} expandProps={expandProps} onExpandChange={setExpandProps}
@@ -196,111 +200,169 @@ const QueryBuilder: React.FC<QueryBuilderProps> = ({ schema, metadataUrl, theme 
         </div>
 
         {/* Right Main Content */}
-        <div className="flex-1 flex flex-col min-w-0 bg-app relative z-0">
+        <div className="flex-1 flex flex-col min-w-0 bg-background relative z-0">
             
             {/* Top Toolbar */}
-            <div className="h-16 shrink-0 flex items-center px-4 gap-3 bg-app/80 backdrop-blur-sm sticky top-0 z-10 border-b border-base">
-                <button 
-                    onClick={() => setShowConfig(!showConfig)}
-                    className="p-2 rounded-lg text-muted hover:bg-hover hover:text-main transition-colors"
+            <div className="h-16 shrink-0 flex items-center px-4 gap-3 border-b border-divider bg-background/80 backdrop-blur sticky top-0 z-10">
+                <Button 
+                    isIconOnly 
+                    variant="light" 
+                    size="sm" 
+                    onPress={() => setShowConfig(!showConfig)}
+                    className="text-default-500"
                 >
                     {showConfig ? <PanelLeftClose className="w-5 h-5" /> : <PanelLeftOpen className="w-5 h-5" />}
-                </button>
+                </Button>
 
-                {/* URL Input Bar */}
-                <div className="flex-1 h-10 bg-sidebar border border-base rounded-lg flex items-center px-3 relative transition-all focus-within:ring-2 focus-within:ring-[rgb(var(--c-accent))]/20 focus-within:border-[rgb(var(--c-accent))]">
-                    <div className="bg-[rgb(var(--c-accent))]/10 text-[rgb(var(--c-accent))] px-1.5 py-0.5 rounded text-[11px] font-bold mr-2 tracking-wide select-none">GET</div>
-                    <input 
+                <div className="flex-1">
+                    <Input 
                         value={urlInput}
-                        onChange={handleUrlInputChange}
+                        onValueChange={(val) => { setUrlInput(val); setIsUrlDirty(true); }}
                         onKeyDown={(e) => e.key === 'Enter' && executeQuery()}
-                        className="flex-1 input-reset text-sm font-mono text-main placeholder-muted" 
-                        spellCheck={false}
+                        size="sm"
+                        radius="md"
+                        variant="bordered"
                         placeholder="https://api.example.com/odata/..."
+                        startContent={
+                            <Chip size="sm" color="primary" variant="flat" classNames={{ base: "h-5", content: "px-1 text-[10px] font-bold" }}>GET</Chip>
+                        }
+                        endContent={
+                            <div className="flex items-center gap-1">
+                                <Tooltip content="Copy URL">
+                                    <Button isIconOnly size="sm" variant="light" className="h-6 w-6 min-w-4" onPress={copyToClipboard}>
+                                        <Copy className="w-3.5 h-3.5 text-default-400" />
+                                    </Button>
+                                </Tooltip>
+                                <Divider orientation="vertical" className="h-4" />
+                                <Tooltip content="Open in New Tab">
+                                    <Button isIconOnly size="sm" variant="light" className="h-6 w-6 min-w-4" onPress={() => window.open(urlInput, '_blank')}>
+                                        <ExternalLink className="w-3.5 h-3.5 text-default-400" />
+                                    </Button>
+                                </Tooltip>
+                            </div>
+                        }
+                        classNames={{
+                            input: "font-mono text-small",
+                            inputWrapper: "bg-default-50 hover:bg-default-100 transition-colors"
+                        }}
                     />
-                    <div className="flex items-center gap-1 pl-2 ml-2 border-l border-base">
-                        <button onClick={copyToClipboard} className="btn-icon" title="Copy">
-                            <Copy className="w-4 h-4" />
-                        </button>
-                        <a href={urlInput} target="_blank" rel="noreferrer" className="btn-icon" title="Open">
-                            <ExternalLink className="w-4 h-4" />
-                        </a>
-                    </div>
                 </div>
 
-                {/* Run Button */}
-                <button 
-                    onClick={() => executeQuery()}
-                    disabled={loading || !urlInput}
-                    className="h-10 px-6 bg-[rgb(var(--c-accent))] hover:bg-[rgb(var(--c-accent-hover))] text-[rgb(var(--c-accent-fg))] rounded-lg font-semibold text-sm shadow-md shadow-[rgb(var(--c-accent))]/20 flex items-center gap-2 transition-all active:scale-95 disabled:opacity-50 disabled:shadow-none disabled:pointer-events-none"
+                <Button 
+                    color="primary" 
+                    isLoading={loading}
+                    onPress={() => executeQuery()}
+                    startContent={!loading && <Play className="w-4 h-4 fill-current" />}
+                    className="font-semibold shadow-md shadow-primary/20"
                 >
-                    {loading ? <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> : <Play className="w-4 h-4 fill-current" />}
-                    <span>Run</span>
-                </button>
+                    Run
+                </Button>
             </div>
 
             {/* Content Area */}
-            <div className="flex-1 flex flex-col overflow-hidden px-4 pb-4 pt-2">
-                <div className="flex-1 w-full flex flex-col overflow-hidden relative rounded-xl border border-base bg-app shadow-sm">
+            <div className="flex-1 flex flex-col overflow-hidden p-4">
+                <Card className="flex-1 w-full flex flex-col overflow-hidden border border-divider shadow-sm" shadow="none">
                     
                     {/* Tabs Header */}
-                    <div className="h-12 border-b border-base flex items-center px-2 justify-between bg-app shrink-0">
-                        <div className="flex items-center">
-                            <TabButton id="table" label="Table" icon={TableIcon} />
-                            <TabButton id="json" label="JSON" icon={FileJson} />
-                            <TabButton id="xml" label="XML" icon={FileCode} />
-                        </div>
+                    <div className="border-b border-divider flex items-center px-4 py-2 justify-between bg-background shrink-0">
+                        <Tabs 
+                            aria-label="Result View" 
+                            selectedKey={activeTab}
+                            onSelectionChange={(k) => setActiveTab(k as TabType)}
+                            variant="underlined"
+                            color="primary"
+                            classNames={{
+                                tabList: "gap-6 w-full relative rounded-none p-0 border-b border-divider",
+                                cursor: "w-full bg-primary",
+                                tab: "max-w-fit px-0 h-10",
+                                tabContent: "group-data-[selected=true]:text-primary"
+                            }}
+                        >
+                            <Tab 
+                                key="table" 
+                                title={
+                                    <div className="flex items-center space-x-2">
+                                        <TableIcon className="w-4 h-4" />
+                                        <span>Table</span>
+                                    </div>
+                                }
+                            />
+                            <Tab 
+                                key="json" 
+                                title={
+                                    <div className="flex items-center space-x-2">
+                                        <FileJson className="w-4 h-4" />
+                                        <span>JSON</span>
+                                    </div>
+                                }
+                            />
+                            <Tab 
+                                key="xml" 
+                                title={
+                                    <div className="flex items-center space-x-2">
+                                        <FileCode className="w-4 h-4" />
+                                        <span>XML</span>
+                                    </div>
+                                }
+                            />
+                        </Tabs>
+
                         {resultData && resultData['@odata.count'] && (
-                            <div className="mr-3 text-xs font-medium text-sec flex items-center gap-1.5 bg-sidebar px-2 py-1 rounded-md border border-base">
-                                <Zap className="w-3.5 h-3.5 text-[rgb(var(--c-accent))]" />
-                                <span>{resultData['@odata.count']} records</span>
-                            </div>
+                            <Chip 
+                                size="sm" 
+                                variant="flat" 
+                                color="success" 
+                                startContent={<Zap className="w-3 h-3 ml-1" />}
+                                className="font-mono"
+                            >
+                                {resultData['@odata.count']} records
+                            </Chip>
                         )}
                     </div>
 
                     {/* Viewport */}
-                    <div className="flex-1 overflow-hidden relative bg-app">
+                    <div className="flex-1 overflow-hidden relative bg-content1">
                         {error && (
-                            <div className="absolute top-4 left-4 right-4 z-20 p-4 bg-red-50 dark:bg-red-900/10 border border-red-200 dark:border-red-800 rounded-lg text-red-600 dark:text-red-400 text-sm flex items-start gap-3 shadow-lg">
+                            <div className="absolute top-4 left-4 right-4 z-20 p-4 bg-danger-50 dark:bg-danger-900/20 border border-danger-200 dark:border-danger-800 rounded-lg text-danger text-sm flex items-start gap-3 shadow-lg">
                                 <X className="w-5 h-5 shrink-0 mt-0.5" />
                                 <div className="font-mono break-all flex-1">{error}</div>
-                                <button onClick={() => setError(null)} className="hover:bg-red-100 dark:hover:bg-red-800/30 rounded p-1 transition-colors"><X className="w-4 h-4"/></button>
+                                <Button isIconOnly size="sm" variant="light" color="danger" onPress={() => setError(null)}><X className="w-4 h-4"/></Button>
                             </div>
                         )}
 
                         {!resultData && !resultXml && !loading && !error && (
-                            <div className="absolute inset-0 flex flex-col items-center justify-center text-muted select-none">
-                                <div className="w-16 h-16 rounded-2xl bg-sidebar flex items-center justify-center mb-4 border border-base">
+                            <div className="absolute inset-0 flex flex-col items-center justify-center text-default-400 select-none">
+                                <div className="w-16 h-16 rounded-2xl bg-default-100 flex items-center justify-center mb-4 border border-divider">
                                     <Settings2 className="w-8 h-8 opacity-40" />
                                 </div>
-                                <p className="text-sm font-medium">配置参数并点击运行</p>
+                                <p className="text-small font-medium">配置参数并点击运行</p>
                             </div>
                         )}
 
                         <div className="w-full h-full overflow-hidden">
-                            {activeTab === 'json' && resultData && <div className="h-full w-full bg-[rgb(var(--c-bg-sidebar))]"><JsonNode value={resultData} theme={theme} /></div>}
+                            {activeTab === 'json' && resultData && <div className="h-full w-full bg-[#1e1e1e]"><JsonNode value={resultData} theme={theme} /></div>}
                             
-                            {activeTab === 'xml' && resultXml && <div className="h-full w-full bg-[rgb(var(--c-bg-sidebar))]"><XmlViewer xmlString={resultXml} theme={theme} /></div>}
+                            {activeTab === 'xml' && resultXml && <div className="h-full w-full bg-[#1e1e1e]"><XmlViewer xmlString={resultXml} theme={theme} /></div>}
                             
                             {activeTab === 'table' && resultData && (
                                 <div className="h-full flex flex-col">
                                     {drillStack.length > 0 && (
-                                        <div className="flex items-center gap-2 p-2 bg-hover border-b border-base text-xs shrink-0 sticky top-0 z-20">
-                                            <button onClick={() => setDrillStack([])} className="p-1.5 rounded-md hover:bg-active text-sec transition-colors">
-                                                <ArrowLeft className="w-4 h-4" />
-                                            </button>
-                                            <span className="text-muted">Root</span>
+                                        <div className="flex items-center gap-2 p-2 bg-default-50 border-b border-divider text-tiny shrink-0 sticky top-0 z-20">
+                                            <Button isIconOnly size="sm" variant="flat" onPress={() => setDrillStack([])} className="h-6 w-6">
+                                                <ArrowLeft className="w-3.5 h-3.5" />
+                                            </Button>
+                                            <span className="text-default-500">Root</span>
                                             {drillStack.map((item, idx) => (
                                                 <React.Fragment key={idx}>
-                                                    <ChevronRight className="w-3.5 h-3.5 text-muted" />
-                                                    <span className="px-2 py-0.5 bg-app rounded border border-base text-main font-medium truncate max-w-[150px]">
+                                                    <ChevronRight className="w-3.5 h-3.5 text-default-400" />
+                                                    <Chip size="sm" variant="flat" radius="sm" classNames={{ content: "px-1 max-w-[150px] truncate" }}>
                                                         {item.title}
-                                                    </span>
+                                                    </Chip>
                                                 </React.Fragment>
                                             ))}
                                         </div>
                                     )}
-                                    <div className="flex-1 overflow-auto bg-app">
+                                    <div className="flex-1 overflow-auto bg-background">
                                         <DataTable 
                                             data={currentTableData} 
                                             onDrillDown={(k, d) => setDrillStack(prev => [...prev, { title: k, data: d }])} 
@@ -311,7 +373,7 @@ const QueryBuilder: React.FC<QueryBuilderProps> = ({ schema, metadataUrl, theme 
                             )}
                         </div>
                     </div>
-                </div>
+                </Card>
             </div>
         </div>
     </div>

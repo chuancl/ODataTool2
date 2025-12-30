@@ -1,5 +1,18 @@
-import React, { useMemo, useState, useRef, useEffect } from 'react';
-import { ChevronRight, Braces, Table as TableIcon } from 'lucide-react';
+import React, { useMemo, useState } from 'react';
+import { 
+    useReactTable, 
+    getCoreRowModel, 
+    getSortedRowModel, 
+    flexRender, 
+    ColumnDef,
+    SortingState,
+    Header
+} from '@tanstack/react-table';
+import { ChevronRight, Braces, Table as TableIcon, ArrowDown, ArrowUp, ArrowUpDown } from 'lucide-react';
+import { Chip } from '@heroui/chip';
+import { Link } from '@heroui/link';
+
+// --- Cell Renderer Component ---
 
 interface DataCellProps {
     value: any;
@@ -9,53 +22,79 @@ interface DataCellProps {
 }
 
 const DataCell: React.FC<DataCellProps> = ({ value, colName, dataType, onDrill }) => {
-    if (value === null || value === undefined) return <span className="text-muted italic opacity-40 text-[11px]">null</span>;
+    if (value === null || value === undefined) return <span className="text-default-300 italic text-[11px]">null</span>;
     
     // Array
     if (Array.isArray(value)) {
         return (
-            <button onClick={onDrill} className="group flex items-center gap-1.5 pl-1 pr-2 py-0.5 rounded-full bg-hover hover:bg-[rgb(var(--c-accent-subtle))] transition-colors border border-transparent hover:border-[rgb(var(--c-accent))]/30">
-                <div className="bg-white dark:bg-black rounded-full p-0.5 shadow-sm text-sec group-hover:text-[rgb(var(--c-accent))]">
-                    <TableIcon className="w-3.5 h-3.5" />
-                </div>
-                <span className="text-[11px] font-medium text-sec group-hover:text-[rgb(var(--c-accent))]">{value.length} items</span>
-            </button>
+            <Chip 
+                size="sm" 
+                variant="flat" 
+                color="primary" 
+                startContent={<TableIcon className="w-3 h-3 ml-1" />}
+                className="cursor-pointer hover:bg-primary/20 transition-colors h-6"
+                onClick={onDrill}
+            >
+                {value.length} items
+            </Chip>
         );
     }
     
     // Object
     if (typeof value === 'object') {
         return (
-             <button onClick={onDrill} className="group flex items-center gap-1.5 pl-1 pr-2 py-0.5 rounded-full bg-hover hover:bg-[rgb(var(--c-accent-subtle))] transition-colors border border-transparent hover:border-[rgb(var(--c-accent))]/30">
-                <div className="bg-white dark:bg-black rounded-full p-0.5 shadow-sm text-sec group-hover:text-[rgb(var(--c-accent))]">
-                    <Braces className="w-3.5 h-3.5" />
-                </div>
-                <span className="text-[11px] font-medium text-sec group-hover:text-[rgb(var(--c-accent))]">Object</span>
-            </button>
+            <Chip 
+                size="sm" 
+                variant="flat" 
+                color="secondary" 
+                startContent={<Braces className="w-3 h-3 ml-1" />}
+                className="cursor-pointer hover:bg-secondary/20 transition-colors h-6"
+                onClick={onDrill}
+            >
+                Object
+            </Chip>
         );
     }
     
     const str = String(value);
 
     if (str.startsWith('data:image/')) {
-        return <span className="text-sec text-xs italic opacity-80">[Image]</span>;
+        return <span className="text-default-400 text-xs italic">[Image]</span>;
     }
 
     if (str.startsWith('http')) {
         return (
-            <a href={str} target="_blank" rel="noreferrer" className="text-blue-500 hover:text-blue-600 hover:underline truncate block max-w-[300px]" onClick={e=>e.stopPropagation()}>
+            <Link 
+                isExternal 
+                href={str} 
+                size="sm"
+                className="truncate block max-w-full" 
+                onClick={e => e.stopPropagation()}
+            >
                 {str}
-            </a>
+            </Link>
         );
     }
     
     if (typeof value === 'boolean') {
-        return <span className={`text-[11px] font-bold px-2 py-0.5 rounded-full border ${value ? 'text-green-600 bg-green-50 border-green-200 dark:bg-green-900/30 dark:border-green-800 dark:text-green-400' : 'text-red-600 bg-red-50 border-red-200 dark:bg-red-900/30 dark:border-red-800 dark:text-red-400'}`}>{String(value).toUpperCase()}</span>;
+        return (
+            <Chip 
+                size="sm" 
+                variant="flat" 
+                color={value ? "success" : "danger"} 
+                classNames={{ content: "font-bold text-[10px]" }}
+                className="h-5"
+            >
+                {String(value).toUpperCase()}
+            </Chip>
+        );
     }
 
-    return <span className="text-main text-sm block truncate font-mono leading-relaxed" title={str}>{str}</span>;
+    return <span className="text-foreground text-sm block truncate font-mono leading-relaxed" title={str}>{str}</span>;
 };
 
+
+// --- Main Table Component ---
 
 interface DataTableProps {
     data: any[];
@@ -64,101 +103,153 @@ interface DataTableProps {
 }
 
 const DataTable: React.FC<DataTableProps> = ({ data, onDrillDown, columnTypes }) => {
-    const [colWidths, setColWidths] = useState<Record<string, number>>({});
-    const resizingRef = useRef<{ col: string, startX: number, startWidth: number } | null>(null);
+    const [sorting, setSorting] = useState<SortingState>([]);
 
     const safeData = useMemo(() => {
         if (!data) return [];
         return Array.isArray(data) ? data : [data];
     }, [data]);
 
-    const columns = useMemo(() => Array.from(new Set(safeData.flatMap(Object.keys))), [safeData]);
+    // 动态生成列定义
+    const columns = useMemo<ColumnDef<any>[]>(() => {
+        if (safeData.length === 0) return [];
+        
+        // 获取所有可能的键
+        const keys = Array.from(new Set(safeData.flatMap(Object.keys)));
+        
+        const generatedCols: ColumnDef<any>[] = keys.map(key => ({
+            accessorKey: key,
+            header: key,
+            cell: info => (
+                <DataCell 
+                    value={info.getValue()} 
+                    colName={key} 
+                    dataType={columnTypes?.get(key)} 
+                    onDrill={() => onDrillDown(`${key} [${info.row.index}]`, info.getValue())} 
+                />
+            ),
+            size: 150, // 默认宽度
+            minSize: 80,
+            maxSize: 600,
+        }));
 
-    useEffect(() => {
-        const handleMouseMove = (e: MouseEvent) => {
-            if (resizingRef.current) {
-                const { col, startX, startWidth } = resizingRef.current;
-                const diff = e.clientX - startX;
-                const newWidth = Math.max(80, startWidth + diff);
-                setColWidths(prev => ({ ...prev, [col]: newWidth }));
-            }
+        // 添加序号列
+        const indexCol: ColumnDef<any> = {
+            id: 'index',
+            header: '#',
+            size: 50,
+            enableSorting: false,
+            enableResizing: false,
+            cell: info => (
+                <span className="text-tiny font-mono text-default-400">
+                    {info.row.index + 1}
+                </span>
+            ),
         };
 
-        const handleMouseUp = () => {
-            if (resizingRef.current) {
-                resizingRef.current = null;
-                document.body.style.cursor = 'default';
-            }
-        };
+        return [indexCol, ...generatedCols];
+    }, [safeData, columnTypes, onDrillDown]);
 
-        document.addEventListener('mousemove', handleMouseMove);
-        document.addEventListener('mouseup', handleMouseUp);
-        return () => {
-            document.removeEventListener('mousemove', handleMouseMove);
-            document.removeEventListener('mouseup', handleMouseUp);
-        };
-    }, []);
-
-    const startResize = (e: React.MouseEvent, col: string) => {
-        e.preventDefault();
-        const currentWidth = colWidths[col] || 150;
-        resizingRef.current = { col, startX: e.clientX, startWidth: currentWidth };
-        document.body.style.cursor = 'col-resize';
-    };
+    const table = useReactTable({
+        data: safeData,
+        columns,
+        state: {
+            sorting,
+        },
+        onSortingChange: setSorting,
+        getCoreRowModel: getCoreRowModel(),
+        getSortedRowModel: getSortedRowModel(),
+        columnResizeMode: 'onChange', // 实时调整列宽
+        defaultColumn: {
+            minSize: 60,
+            maxSize: 800,
+        },
+    });
 
     if (safeData.length === 0) {
         return (
-            <div className="flex flex-col items-center justify-center h-full text-muted select-none">
-                <p className="text-sm">No records found</p>
+            <div className="flex flex-col items-center justify-center h-full text-default-400 select-none">
+                <p className="text-small">No records found</p>
             </div>
         );
     }
 
     return (
-        <div className="inline-block min-w-full align-middle">
-            <table className="min-w-full border-collapse odata-table">
-                <thead className="sticky top-0 z-10 shadow-sm">
-                    <tr>
-                        <th className="sticky left-0 z-20 w-12 text-center">
-                            <span className="text-[11px] font-bold text-muted">#</span>
-                        </th>
-                        {columns.map(col => (
-                            <th 
-                                key={col} 
-                                className="relative px-4 py-3 text-left whitespace-nowrap group select-none"
-                                style={{ width: colWidths[col] || 150, minWidth: 80, maxWidth: 600 }}
-                            >
-                                <div className="flex flex-col gap-0.5 overflow-hidden">
-                                    <span className="text-[12px] font-bold text-sec truncate" title={col}>{col}</span>
-                                    {columnTypes?.get(col) && <span className="text-[10px] font-normal text-muted font-mono truncate">{columnTypes.get(col)}</span>}
-                                </div>
-                                {/* Resizer Handle */}
-                                <div 
-                                    className="absolute right-0 top-0 bottom-0 w-1 cursor-col-resize hover:bg-[rgb(var(--c-accent))] active:bg-[rgb(var(--c-accent))] z-10 transition-colors"
-                                    onMouseDown={(e) => startResize(e, col)}
-                                />
-                            </th>
-                        ))}
-                    </tr>
-                </thead>
-                <tbody className="bg-app divide-y divide-base/50">
-                    {safeData.map((row, rowIdx) => (
-                        <tr key={rowIdx} className="hover:bg-hover transition-colors group">
-                            <td className="sticky left-0 z-10 bg-app group-hover:bg-hover px-2 py-2 text-center text-[11px] font-mono text-muted border-r-2 border-r-transparent group-hover:border-r-[rgb(var(--c-accent))]">
-                                {rowIdx + 1}
-                            </td>
-                            {columns.map(col => (
-                                <td 
-                                    key={col} 
-                                    className="px-4 py-2 whitespace-nowrap"
-                                    style={{ maxWidth: colWidths[col] || 150 }}
+        <div className="odata-table-container">
+            <table className="odata-table" style={{ width: table.getTotalSize() }}>
+                <thead>
+                    {table.getHeaderGroups().map(headerGroup => (
+                        <tr key={headerGroup.id}>
+                            {headerGroup.headers.map(header => (
+                                <th 
+                                    key={header.id} 
+                                    className={`relative group select-none ${header.column.getCanSort() ? 'cursor-pointer hover:bg-default-200/50' : ''}`}
+                                    style={{ 
+                                        width: header.getSize(),
+                                        // 序号列特殊处理粘性定位
+                                        ...(header.id === 'index' ? { position: 'sticky', left: 0, zIndex: 30, background: 'hsl(var(--heroui-default-100))' } : {})
+                                    }}
+                                    onClick={header.column.getToggleSortingHandler()}
                                 >
-                                    <DataCell 
-                                        value={row[col]} 
-                                        colName={col}
-                                        dataType={columnTypes?.get(col)}
-                                        onDrill={() => onDrillDown(`${col} [${rowIdx}]`, row[col])} 
-                                    />
+                                    <div className="flex items-center justify-between gap-1 overflow-hidden h-full">
+                                        <div className="flex flex-col gap-0.5 overflow-hidden flex-1">
+                                            <span className="text-small font-bold text-foreground truncate" title={header.id === 'index' ? '' : String(header.column.columnDef.header)}>
+                                                {flexRender(header.column.columnDef.header, header.getContext())}
+                                            </span>
+                                            {header.id !== 'index' && columnTypes?.get(header.id) && (
+                                                <span className="text-[10px] font-normal text-default-400 font-mono truncate">
+                                                    {columnTypes.get(header.id)}
+                                                </span>
+                                            )}
+                                        </div>
+                                        
+                                        {/* Sort Indicator */}
+                                        {header.column.getCanSort() && (
+                                            <div className={`text-default-400 transition-opacity ${header.column.getIsSorted() ? 'opacity-100' : 'opacity-0 group-hover:opacity-50'}`}>
+                                                {{
+                                                    asc: <ArrowUp className="w-3 h-3" />,
+                                                    desc: <ArrowDown className="w-3 h-3" />,
+                                                }[header.column.getIsSorted() as string] ?? <ArrowUpDown className="w-3 h-3" />}
+                                            </div>
+                                        )}
+                                    </div>
+
+                                    {/* Resizer Handle */}
+                                    {header.column.getCanResize() && (
+                                        <div
+                                            onMouseDown={header.getResizeHandler()}
+                                            onTouchStart={header.getResizeHandler()}
+                                            onClick={(e) => e.stopPropagation()} // 防止触发排序
+                                            className={`absolute right-0 top-0 bottom-0 w-1 cursor-col-resize z-10 transition-colors ${
+                                                header.column.getIsResizing() ? 'bg-primary' : 'hover:bg-primary/50'
+                                            }`}
+                                        />
+                                    )}
+                                </th>
+                            ))}
+                        </tr>
+                    ))}
+                </thead>
+                <tbody>
+                    {table.getRowModel().rows.map(row => (
+                        <tr key={row.id} className="group">
+                            {row.getVisibleCells().map(cell => (
+                                <td 
+                                    key={cell.id} 
+                                    style={{ 
+                                        width: cell.column.getSize(),
+                                        // 序号列特殊处理粘性定位
+                                        ...(cell.column.id === 'index' ? { 
+                                            position: 'sticky', 
+                                            left: 0, 
+                                            zIndex: 10, 
+                                            backgroundColor: 'hsl(var(--heroui-background))',
+                                            borderRight: '2px solid transparent'
+                                        } : {})
+                                    }}
+                                    className={cell.column.id === 'index' ? "text-center !border-r-transparent group-hover:!border-r-primary transition-colors !bg-background group-hover:!bg-default-100/50" : ""}
+                                >
+                                    {flexRender(cell.column.columnDef.cell, cell.getContext())}
                                 </td>
                             ))}
                         </tr>

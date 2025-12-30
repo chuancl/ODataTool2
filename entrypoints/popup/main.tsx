@@ -1,7 +1,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
+import { HeroUIProvider } from '@heroui/system';
 import App from './App';
-// 确保引用了 Tailwind CSS
 import '../../assets/main.css';
 
 const rootElement = document.getElementById('root');
@@ -9,7 +9,11 @@ if (rootElement) {
   const root = ReactDOM.createRoot(rootElement);
   root.render(
     <React.StrictMode>
-      <App />
+      <HeroUIProvider>
+        <div className="w-full h-full bg-background text-foreground">
+            <App />
+        </div>
+      </HeroUIProvider>
     </React.StrictMode>
   );
 } else {
