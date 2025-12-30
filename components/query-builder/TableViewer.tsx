@@ -224,7 +224,7 @@ const DataTable: React.FC<DataTableProps> = ({ data, onDrillDown, columnTypes })
                                             }`}
                                         />
                                     )}
-                                th>
+                                </th>
                             ))}
                         </tr>
                     ))}
