@@ -62,7 +62,7 @@ body {
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   background-color: var(--bg-app);
   color: var(--text-primary);
-  font-size: 13px; /* 数据密集型应用的标准字号 */
+  font-size: 14px; /* 调大基准字号 */
   line-height: 1.5;
   -webkit-font-smoothing: antialiased;
 }
@@ -78,7 +78,7 @@ body {
 
   /* 通用输入框 */
   .input-control {
-    @apply w-full px-2.5 py-1.5 text-xs rounded border outline-none transition-all;
+    @apply w-full px-3 py-2 text-sm rounded border outline-none transition-all;
     background-color: var(--bg-panel);
     border-color: var(--border-strong);
     color: var(--text-primary);
@@ -90,14 +90,14 @@ body {
 
   /* 按钮 */
   .btn-primary {
-    @apply px-4 py-1.5 text-xs font-semibold rounded text-white shadow-sm transition-all active:translate-y-px;
+    @apply px-4 py-2 text-sm font-semibold rounded text-white shadow-sm transition-all active:translate-y-px;
     background-color: var(--accent-primary);
   }
   .btn-primary:hover { background-color: var(--accent-hover); }
   .btn-primary:disabled { opacity: 0.6; cursor: not-allowed; }
 
   .btn-default {
-    @apply px-3 py-1.5 text-xs font-medium rounded border transition-all active:translate-y-px;
+    @apply px-3 py-2 text-sm font-medium rounded border transition-all active:translate-y-px;
     background-color: var(--bg-panel);
     border-color: var(--border-strong);
     color: var(--text-secondary);
@@ -127,8 +127,8 @@ body {
   }
   /* 表格中的滚动条可以更细一点 */
   .table-scroll::-webkit-scrollbar {
-      height: 8px;
-      width: 8px;
+      height: 12px;
+      width: 12px;
   }
 }
 
