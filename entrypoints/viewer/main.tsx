@@ -162,12 +162,13 @@ const ODataViewerApp: React.FC = () => {
                     <Tabs 
                         selectedKey={viewMode} 
                         onSelectionChange={(k) => setViewMode(k as any)}
-                        radius="md" 
+                        radius="full" 
                         size="sm"
                         color="primary"
                         variant="solid"
                         classNames={{
-                            tabList: "bg-default-100",
+                            tabList: "bg-default-100/50 p-1 border border-default-200",
+                            cursor: "shadow-sm",
                         }}
                     >
                         <Tab key="details" title="Schema" />
