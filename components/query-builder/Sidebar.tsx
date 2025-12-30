@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { ChevronDown, ChevronRight, Filter, LayoutGrid, Layers, Hash } from 'lucide-react';
+import React from 'react';
+import { ChevronDown, Check, Plus, Filter, ArrowUpDown, Database, LayoutGrid, Layers3, Activity } from 'lucide-react';
 import { ODataSchema, ODataEntity } from '../../types';
 
 interface SidebarProps {
@@ -25,40 +25,6 @@ interface SidebarProps {
     onCountChange: (val: boolean) => void;
 }
 
-const ConfigGroup: React.FC<{ 
-    title: string; 
-    icon: React.ElementType; 
-    children: React.ReactNode; 
-    defaultOpen?: boolean; 
-    badge?: number | string 
-}> = ({ title, icon: Icon, children, defaultOpen = true, badge }) => {
-    const [isOpen, setIsOpen] = useState(defaultOpen);
-    return (
-        <div className="mb-2">
-            <button 
-                onClick={() => setIsOpen(!isOpen)}
-                className="w-full flex items-center justify-between px-4 py-2.5 hover:bg-[var(--bg-page)] transition-colors select-none rounded-lg group"
-            >
-                <div className="flex items-center gap-2.5 text-sm font-semibold text-[var(--text-main)] group-hover:text-violet-600 transition-colors">
-                    <Icon className="w-4 h-4 text-[var(--text-muted)] group-hover:text-violet-500" />
-                    {title}
-                </div>
-                <div className="flex items-center gap-2">
-                    {badge !== undefined && badge !== 0 && badge !== '' && (
-                        <span className="text-[10px] px-1.5 py-0.5 bg-violet-100 text-violet-700 rounded font-bold">{badge}</span>
-                    )}
-                    <ChevronDown className={`w-4 h-4 text-[var(--text-muted)] transition-transform duration-200 ${isOpen ? 'rotate-0' : '-rotate-90'}`} />
-                </div>
-            </button>
-            {isOpen && (
-                <div className="px-4 py-2 animate-in slide-in-from-top-1 duration-200">
-                    {children}
-                </div>
-            )}
-        </div>
-    );
-};
-
 const Sidebar: React.FC<SidebarProps> = ({
     schema, selectedSet, onSetChange, currentEntity,
     selectedProps, onPropChange,
@@ -79,142 +45,164 @@ const Sidebar: React.FC<SidebarProps> = ({
     };
 
     return (
-        <div className="flex flex-col gap-2 p-2 pb-10">
-            {/* Entity Select */}
-            <div className="px-4 py-4">
-                <label className="text-xs font-bold text-[var(--text-muted)] uppercase tracking-wider mb-2 block">Source Entity</label>
+        <div className="w-[340px] bg-surface border-r-2 border-border flex flex-col h-full overflow-y-auto shrink-0 z-20 shadow-2xl">
+            {/* 核心配置区 */}
+            <div className="p-10 border-b-2 border-border bg-canvas/50 sticky top-0 z-10 backdrop-blur-xl">
+                <div className="flex items-center gap-4 mb-6">
+                    <div className="p-3 bg-brand/20 text-brand rounded-2xl border-2 border-brand/20"><Database className="w-6 h-6" /></div>
+                    <label className="text-sm font-black text-text-main uppercase tracking-[0.25em]">数据集合</label>
+                </div>
                 <div className="relative">
                     <select 
                         value={selectedSet} 
                         onChange={e => onSetChange(e.target.value)}
-                        className="modern-input border border-[var(--border-light)] bg-white font-semibold appearance-none pr-10"
+                        className="w-full p-4 pl-5 pr-12 bg-surface border-2 border-border rounded-2xl text-base font-black text-text-main focus:ring-4 focus:ring-brand/20 focus:border-brand outline-none appearance-none shadow-md transition-all"
                     >
                         {schema.entitySets.map(s => (
                             <option key={s.name} value={s.name}>{s.name}</option>
                         ))}
                     </select>
-                    <ChevronDown className="absolute right-3 top-3 w-4 h-4 text-[var(--text-muted)] pointer-events-none" />
+                    <ChevronDown className="absolute right-5 top-5 w-6 h-6 text-text-main pointer-events-none" />
                 </div>
+                {currentEntity && (
+                    <div className="mt-6">
+                        <span className="text-xs font-black text-brand uppercase tracking-widest px-3 py-1.5 bg-brand/10 rounded-xl border-2 border-brand/20 shadow-sm">
+                            类型: {currentEntity.name}
+                        </span>
+                    </div>
+                )}
             </div>
 
-            <div className="h-px bg-[var(--border-light)] mx-4 mb-2"></div>
-
             {currentEntity ? (
-                <>
-                    {/* Columns */}
-                    <ConfigGroup title="Select Columns" icon={LayoutGrid} badge={selectedProps.size > 0 ? selectedProps.size : undefined}>
-                         <div className="flex justify-end mb-2">
-                            {selectedProps.size > 0 && <button onClick={() => onPropChange(new Set())} className="text-xs text-violet-600 hover:underline">Clear</button>}
+                <div className="flex-1 p-10 space-y-12">
+                    {/* $select */}
+                    <section>
+                        <div className="flex items-center justify-between mb-6">
+                            <h3 className="text-xs font-black text-text-main flex items-center gap-3 uppercase tracking-widest">
+                                <LayoutGrid className="w-5 h-5 text-brand" /> 投影字段 ($select)
+                            </h3>
+                            <button 
+                                onClick={() => onPropChange(new Set(selectedProps.size === 0 ? currentEntity.properties.map(p=>p.name) : []))}
+                                className="text-[11px] font-black text-brand bg-brand/10 px-4 py-2 rounded-xl hover:bg-brand hover:text-brand-fg transition-all uppercase border-2 border-brand/20 shadow-sm"
+                            >
+                                {selectedProps.size === 0 ? '全选' : '清空'}
+                            </button>
                         </div>
-                        <div className="max-h-56 overflow-y-auto space-y-1 custom-scrollbar pr-1">
+                        <div className="max-h-72 overflow-y-auto border-2 border-border rounded-3xl p-4 bg-canvas/30 grid grid-cols-1 gap-2.5 shadow-inner custom-scrollbar">
                             {currentEntity.properties.map(p => (
-                                <label key={p.name} className={`flex items-center gap-3 p-2 rounded-lg cursor-pointer transition-all border ${selectedProps.has(p.name) ? 'bg-violet-50 border-violet-100' : 'hover:bg-[var(--bg-page)] border-transparent'}`}>
+                                <label key={p.name} className="flex items-center gap-4 cursor-pointer hover:bg-surface p-3.5 rounded-2xl transition-all group border-2 border-transparent hover:border-border hover:shadow-md">
                                     <input 
                                         type="checkbox" 
-                                        className="w-4 h-4 rounded text-violet-600 border-zinc-300 focus:ring-violet-500"
+                                        className="w-5 h-5 rounded-lg border-2 border-border text-brand focus:ring-brand bg-surface transition-all"
                                         checked={selectedProps.has(p.name)}
                                         onChange={() => toggleSelection(selectedProps, p.name, onPropChange)}
                                     />
-                                    <span className={`text-sm truncate ${selectedProps.has(p.name) ? 'text-[var(--text-main)] font-medium' : 'text-[var(--text-muted)]'}`}>
-                                        {p.name}
-                                    </span>
+                                    <span className={`text-sm font-black truncate transition-colors ${selectedProps.has(p.name) ? 'text-text-main' : 'text-text-muted'}`}>{p.name}</span>
                                 </label>
                             ))}
                         </div>
-                    </ConfigGroup>
+                    </section>
 
-                    {/* Expand */}
+                    {/* $expand */}
                     {currentEntity.navigationProperties.length > 0 && (
-                        <ConfigGroup title="Expand Relations" icon={Layers} badge={expandProps.size > 0 ? expandProps.size : undefined} defaultOpen={false}>
-                            <div className="space-y-1">
+                        <section>
+                            <h3 className="text-xs font-black text-text-main mb-6 flex items-center gap-3 uppercase tracking-widest">
+                                <Layers3 className="w-5 h-5 text-brand" /> 关联展开 ($expand)
+                            </h3>
+                            <div className="flex flex-wrap gap-3">
                                 {currentEntity.navigationProperties.map(np => (
-                                    <label key={np.name} className={`flex items-center gap-2 p-2 rounded-lg cursor-pointer transition-all border ${expandProps.has(np.name) ? 'bg-violet-50 border-violet-100 text-violet-700 font-medium' : 'hover:bg-[var(--bg-page)] border-transparent text-[var(--text-muted)]'}`}>
+                                    <label key={np.name} className={`px-5 py-3 rounded-2xl text-xs font-black uppercase tracking-widest border-2 cursor-pointer transition-all shadow-md ${expandProps.has(np.name) ? 'bg-brand text-brand-fg border-brand' : 'bg-surface border-border text-text-muted hover:border-brand hover:text-brand'}`}>
                                         <input type="checkbox" className="hidden" checked={expandProps.has(np.name)} onChange={() => toggleSelection(expandProps, np.name, onExpandChange)} />
-                                        <div className={`w-4 h-4 rounded flex items-center justify-center border transition-colors ${expandProps.has(np.name) ? 'border-violet-500 bg-violet-500 text-white' : 'border-zinc-300'}`}>
-                                            {expandProps.has(np.name) && <div className="w-2 h-2 bg-white rounded-full" />}
-                                        </div>
-                                        <span className="text-sm truncate">{np.name}</span>
+                                        {np.name}
                                     </label>
                                 ))}
                             </div>
-                        </ConfigGroup>
+                        </section>
                     )}
 
-                    {/* Filter */}
-                    <ConfigGroup title="Filter & Sort" icon={Filter} badge={filter ? '•' : undefined}>
-                        <div className="space-y-4">
-                            <div>
-                                <label className="text-xs font-bold text-[var(--text-muted)] block mb-1.5">Filter ($filter)</label>
-                                <input 
-                                    type="text" 
-                                    placeholder="e.g. Price gt 20" 
-                                    className="modern-input text-xs border border-[var(--border-light)]"
-                                    value={filter}
-                                    onChange={e => onFilterChange(e.target.value)}
-                                />
-                            </div>
-                            <div>
-                                <label className="text-xs font-bold text-[var(--text-muted)] block mb-1.5">Order By</label>
-                                <div className="flex gap-2">
-                                    <div className="relative flex-1">
-                                         <select 
-                                            className="modern-input text-xs border border-[var(--border-light)] appearance-none"
-                                            value={orderBy}
-                                            onChange={e => onOrderByChange(e.target.value)}
-                                        >
-                                            <option value="">(None)</option>
-                                            {currentEntity.properties.map(p => <option key={p.name} value={p.name}>{p.name}</option>)}
-                                        </select>
-                                        <ChevronDown className="absolute right-3 top-2.5 w-3 h-3 text-[var(--text-muted)] pointer-events-none" />
-                                    </div>
-                                    <button 
-                                        onClick={() => onOrderByDirChange(orderByDir === 'asc' ? 'desc' : 'asc')}
-                                        className="px-3 border border-[var(--border-light)] rounded-lg bg-white hover:bg-[var(--bg-page)] text-[var(--text-muted)] text-xs font-bold"
-                                    >
-                                        {orderByDir === 'asc' ? 'ASC' : 'DESC'}
-                                    </button>
-                                </div>
+                    {/* Filtering & Sorting */}
+                    <section className="space-y-8 pt-4">
+                        <div>
+                            <h3 className="text-xs font-black text-text-main mb-6 flex items-center gap-3 uppercase tracking-widest">
+                                <Filter className="w-5 h-5 text-brand" /> 数据过滤 ($filter)
+                            </h3>
+                            <input 
+                                type="text" 
+                                placeholder="输入过滤表达式..." 
+                                className="w-full px-6 py-4 bg-canvas border-2 border-border rounded-2xl text-sm font-bold focus:ring-4 focus:ring-brand/10 focus:border-brand outline-none transition-all text-text-main placeholder:text-text-muted/30 shadow-md"
+                                value={filter}
+                                onChange={e => onFilterChange(e.target.value)}
+                            />
+                        </div>
+
+                        <div>
+                            <h3 className="text-xs font-black text-text-main mb-6 flex items-center gap-3 uppercase tracking-widest">
+                                <ArrowUpDown className="w-5 h-5 text-brand" /> 结果排序 ($orderby)
+                            </h3>
+                            <div className="flex flex-col gap-4">
+                                <select 
+                                    className="w-full px-5 py-4 bg-canvas border-2 border-border rounded-2xl text-sm outline-none focus:ring-4 focus:ring-brand/10 focus:border-brand transition-all text-text-main font-bold appearance-none shadow-md"
+                                    value={orderBy}
+                                    onChange={e => onOrderByChange(e.target.value)}
+                                >
+                                    <option value="">(默认排序)</option>
+                                    {currentEntity.properties.map(p => <option key={p.name} value={p.name}>{p.name}</option>)}
+                                </select>
+                                <select 
+                                    className="w-full px-5 py-4 bg-canvas border-2 border-border rounded-2xl text-xs font-black outline-none focus:ring-4 focus:ring-brand/10 focus:border-brand shadow-md uppercase tracking-widest"
+                                    value={orderByDir}
+                                    onChange={e => onOrderByDirChange(e.target.value as 'asc' | 'desc')}
+                                >
+                                    <option value="asc">升序排列 ↑</option>
+                                    <option value="desc">降序排列 ↓</option>
+                                </select>
                             </div>
                         </div>
-                    </ConfigGroup>
+                    </section>
 
                     {/* Pagination */}
-                    <ConfigGroup title="Pagination" icon={Hash} badge={(top || skip) ? '•' : undefined} defaultOpen={false}>
-                        <div className="grid grid-cols-2 gap-3 mb-4">
+                    <section className="bg-canvas p-8 rounded-[2rem] border-2 border-border shadow-xl space-y-8">
+                        <div className="flex items-center gap-3 mb-2">
+                            <Activity className="w-5 h-5 text-brand" />
+                            <span className="text-xs font-black uppercase text-text-main tracking-widest">性能与分页</span>
+                        </div>
+                        <div className="grid grid-cols-1 gap-6">
                             <div>
-                                <label className="text-xs font-bold text-[var(--text-muted)] block mb-1.5">Top</label>
+                                <label className="block text-[11px] font-black text-text-muted mb-3 ml-1 uppercase tracking-widest">请求条数 ($top)</label>
                                 <input 
                                     type="number" 
-                                    className="modern-input text-xs border border-[var(--border-light)]"
-                                    placeholder="All"
+                                    className="w-full px-5 py-4 bg-surface border-2 border-border rounded-2xl text-sm font-black outline-none focus:ring-4 focus:ring-brand/10 focus:border-brand transition-all shadow-md"
+                                    placeholder="数量"
                                     value={top}
                                     onChange={e => onTopChange(e.target.value ? Number(e.target.value) : '')}
                                 />
                             </div>
                             <div>
-                                <label className="text-xs font-bold text-[var(--text-muted)] block mb-1.5">Skip</label>
+                                <label className="block text-[11px] font-black text-text-muted mb-3 ml-1 uppercase tracking-widest">跳过条数 ($skip)</label>
                                 <input 
                                     type="number" 
-                                    className="modern-input text-xs border border-[var(--border-light)]"
-                                    placeholder="0"
+                                    className="w-full px-5 py-4 bg-surface border-2 border-border rounded-2xl text-sm font-black outline-none focus:ring-4 focus:ring-brand/10 focus:border-brand transition-all shadow-md"
+                                    placeholder="偏移"
                                     value={skip}
                                     onChange={e => onSkipChange(e.target.value ? Number(e.target.value) : '')}
                                 />
                             </div>
                         </div>
-                        <label className="flex items-center gap-3 cursor-pointer select-none p-3 rounded-xl border border-[var(--border-light)] bg-white hover:border-violet-300 transition-colors">
-                            <input 
-                                type="checkbox" 
-                                checked={count} 
-                                onChange={e => onCountChange(e.target.checked)} 
-                                className="w-4 h-4 rounded text-violet-600 focus:ring-violet-500" 
-                            />
-                            <span className="text-sm font-medium text-[var(--text-main)]">Include Count</span>
+                        <label className="flex items-center justify-between cursor-pointer group p-5 bg-surface rounded-2xl border-2 border-border hover:border-brand transition-all shadow-md">
+                            <span className="text-xs font-black text-text-main uppercase tracking-widest group-hover:text-brand transition-colors">统计总数 ($count)</span>
+                            <div className="relative">
+                                <input type="checkbox" checked={count} onChange={e => onCountChange(e.target.checked)} className="peer hidden" />
+                                <div className="w-12 h-7 bg-border rounded-full peer-checked:bg-brand transition-all shadow-inner border-2 border-transparent"></div>
+                                <div className="absolute top-1 left-1 w-5 h-5 bg-white rounded-full transition-all peer-checked:translate-x-5 shadow-lg border border-border"></div>
+                            </div>
                         </label>
-                    </ConfigGroup>
-                </>
+                    </section>
+                </div>
             ) : (
-                <div className="p-4 text-center text-zinc-400 text-sm">Select an entity to configure</div>
+                <div className="p-24 text-center text-text-muted flex flex-col items-center gap-8 opacity-20 select-none">
+                    <Layers3 className="w-32 h-32 stroke-[0.5px]" />
+                    <p className="text-xs font-black uppercase tracking-[0.5em]">请选择实体</p>
+                </div>
             )}
         </div>
     );

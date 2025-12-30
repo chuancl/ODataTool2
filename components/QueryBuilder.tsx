@@ -1,11 +1,11 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { Play, Copy, X, Table, FileJson, FileCode, ArrowLeft, ChevronRight, ExternalLink, Filter, Plus, SlidersHorizontal, Settings2 } from 'lucide-react';
+import { Play, Copy, X, Table as TableIcon, FileJson, FileCode, ArrowLeft, ChevronRight, ExternalLink, Settings2, SlidersHorizontal } from 'lucide-react';
 import { ODataSchema } from '../types';
 import { normalizeODataResponse } from './query-builder/utils';
+import Sidebar from './query-builder/Sidebar';
 import JsonNode from './query-builder/JsonViewer';
 import XmlViewer from './query-builder/XmlViewer';
 import DataTable from './query-builder/TableViewer';
-import Sidebar from './query-builder/Sidebar'; // Now acts as the Config Panel
 
 interface QueryBuilderProps {
   schema: ODataSchema;
@@ -15,7 +15,9 @@ interface QueryBuilderProps {
 type TabType = 'table' | 'json' | 'xml';
 
 const QueryBuilder: React.FC<QueryBuilderProps> = ({ schema, metadataUrl }) => {
-  const serviceRoot = useMemo(() => metadataUrl.replace(/\/\$metadata$/, '').replace(/\/$/, ''), [metadataUrl]);
+  const serviceRoot = useMemo(() => {
+    return metadataUrl.replace(/\/\$metadata$/, '').replace(/\/$/, '');
+  }, [metadataUrl]);
 
   // Query State
   const [selectedSet, setSelectedSet] = useState<string>('');
@@ -35,9 +37,10 @@ const QueryBuilder: React.FC<QueryBuilderProps> = ({ schema, metadataUrl }) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [drillStack, setDrillStack] = useState<Array<{ title: string, data: any }>>([]);
-  const [showConfig, setShowConfig] = useState(true); // Toggle for config panel
+  
+  // Sidebar visibility
+  const [showConfig, setShowConfig] = useState(true);
 
-  // Init
   useEffect(() => {
     if (schema.entitySets.length > 0 && !selectedSet) {
       setSelectedSet(schema.entitySets[0].name);
@@ -59,7 +62,7 @@ const QueryBuilder: React.FC<QueryBuilderProps> = ({ schema, metadataUrl }) => {
       return map;
   }, [currentEntity]);
 
-  // Reset
+  // Reset results on entity change
   useEffect(() => {
     setSelectedProps(new Set());
     setExpandProps(new Set());
@@ -94,6 +97,7 @@ const QueryBuilder: React.FC<QueryBuilderProps> = ({ schema, metadataUrl }) => {
   }, [serviceRoot, selectedSet, selectedProps, expandProps, filter, orderBy, orderByDir, top, skip, count, currentEntity, schema.version]);
 
   const displayUrl = useMemo(() => {
+    if (!generatedUrl) return '';
     try { return decodeURIComponent(generatedUrl.replace(/\+/g, '%20')); } catch (e) { return generatedUrl; }
   }, [generatedUrl]);
 
@@ -112,22 +116,25 @@ const QueryBuilder: React.FC<QueryBuilderProps> = ({ schema, metadataUrl }) => {
           headers['Accept'] = 'application/json, application/json;odata.metadata=minimal';
       }
       const res = await fetch(generatedUrl, { headers });
-      if (!res.ok) throw new Error(`HTTP ${res.status}: ${res.statusText}`);
+      if (!res.ok) throw new Error(`HTTP Error ${res.status}: ${res.statusText}`);
       const text = await res.text();
+      
       if (targetFormat === 'json') {
           try {
               const json = JSON.parse(text);
               setResultData(json);
               setResultXml('');
-              if (activeTab === 'xml') setActiveTab('table'); 
+              // If we were in XML tab but got JSON, switch to Table or JSON
+              if (activeTab === 'xml') setActiveTab('json');
           } catch (e) {
+              // Maybe it's XML returned despite requesting JSON
               if (text.trim().startsWith('<')) {
                   setResultXml(text);
                   setResultData(null);
                   setActiveTab('xml');
-                  throw new Error("Received XML (auto-switched view)");
+              } else {
+                  throw new Error("Failed to parse response as JSON");
               }
-              throw new Error("Invalid JSON response");
           }
       } else {
           setResultXml(text);
@@ -140,6 +147,13 @@ const QueryBuilder: React.FC<QueryBuilderProps> = ({ schema, metadataUrl }) => {
     }
   };
 
+  const handleTabChange = (newTab: TabType) => {
+      setActiveTab(newTab);
+      // Auto-re-execute if we switch data formats and don't have data yet
+      if (newTab === 'xml' && !resultXml && generatedUrl) executeQuery('xml');
+      if ((newTab === 'json' || newTab === 'table') && !resultData && generatedUrl && !resultXml) executeQuery('json');
+  };
+
   const currentTableData = useMemo(() => {
       if (drillStack.length > 0) return normalizeODataResponse(drillStack[drillStack.length - 1].data);
       if (resultData) return normalizeODataResponse(resultData);
@@ -148,113 +162,115 @@ const QueryBuilder: React.FC<QueryBuilderProps> = ({ schema, metadataUrl }) => {
 
   const copyToClipboard = () => navigator.clipboard.writeText(displayUrl);
 
+  const TabButton = ({ id, label, icon: Icon }: { id: TabType, label: string, icon: any }) => (
+      <button 
+        onClick={() => handleTabChange(id)}
+        className={`flex items-center gap-2 px-4 py-1.5 rounded-lg text-xs font-semibold transition-all ${
+            activeTab === id 
+            ? 'bg-violet-600 text-white shadow-md shadow-violet-900/20' 
+            : 'text-zinc-500 hover:text-zinc-300 hover:bg-zinc-800'
+        }`}
+      >
+          <Icon className="w-3.5 h-3.5" />
+          {label}
+      </button>
+  );
+
   return (
-    <div className="flex flex-col h-full w-full">
-        {/* --- Top Floating Island Bar --- */}
-        <div className="p-4 bg-[var(--bg-surface)] border-b border-[var(--border-light)] shrink-0 flex items-center gap-4 z-20">
-             {/* Toggle Config */}
-             <button 
-                onClick={() => setShowConfig(!showConfig)}
-                className={`p-2.5 rounded-xl transition-all border ${showConfig ? 'bg-violet-50 border-violet-200 text-violet-600' : 'bg-white border-zinc-200 text-zinc-500 hover:text-zinc-800'}`}
-                title="Toggle Query Settings"
-             >
-                 <SlidersHorizontal className="w-5 h-5" />
-             </button>
-
-             {/* URL Display */}
-             <div className="flex-1 flex items-center bg-[var(--bg-page)] rounded-xl border border-[var(--border-light)] p-1.5 pl-4 overflow-hidden relative group transition-colors focus-within:border-violet-300 focus-within:ring-2 focus-within:ring-violet-100">
-                <span className="text-[10px] font-bold text-zinc-400 select-none mr-2">GET</span>
-                <input 
-                    readOnly
-                    value={displayUrl} 
-                    className="flex-1 bg-transparent text-sm text-[var(--text-main)] outline-none font-mono truncate"
-                    onFocus={(e) => e.target.select()}
-                />
-                <div className="flex gap-1 ml-2">
-                    <button onClick={copyToClipboard} className="p-2 hover:bg-white rounded-lg text-zinc-400 hover:text-zinc-600 transition-colors"><Copy className="w-4 h-4"/></button>
-                    <a href={displayUrl} target="_blank" rel="noreferrer" className="p-2 hover:bg-white rounded-lg text-zinc-400 hover:text-zinc-600 transition-colors"><ExternalLink className="w-4 h-4"/></a>
-                </div>
-             </div>
-
-             {/* Run Button */}
-             <button 
-                onClick={() => executeQuery()}
-                disabled={loading || !generatedUrl}
-                className="btn-modern-primary w-28"
-             >
-                {loading ? <div className="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin" /> : <Play className="w-4 h-4 fill-current" />}
-                Run
-             </button>
+    <div className="flex h-full w-full bg-[#09090b] text-zinc-200 font-sans overflow-hidden">
+        {/* Left Sidebar (Config) */}
+        <div className={`shrink-0 border-r border-zinc-800 bg-[#121214] transition-all duration-300 ease-in-out ${showConfig ? 'w-[320px] translate-x-0' : 'w-0 -translate-x-full opacity-0 overflow-hidden'}`}>
+             <Sidebar 
+                schema={schema} selectedSet={selectedSet} onSetChange={setSelectedSet} currentEntity={currentEntity}
+                selectedProps={selectedProps} onPropChange={setSelectedProps} expandProps={expandProps} onExpandChange={setExpandProps}
+                filter={filter} onFilterChange={setFilter} orderBy={orderBy} onOrderByChange={setOrderBy}
+                orderByDir={orderByDir} onOrderByDirChange={setOrderByDir} top={top} onTopChange={setTop}
+                skip={skip} onSkipChange={setSkip} count={count} onCountChange={setCount}
+            />
         </div>
 
-        {/* --- Main Area --- */}
-        <div className="flex-1 flex overflow-hidden">
-            {/* Left: Config Panel (Collapsible) */}
-            <div className={`transition-all duration-300 ease-in-out border-r border-[var(--border-light)] bg-[var(--bg-surface)] overflow-hidden flex flex-col ${showConfig ? 'w-[320px] opacity-100 translate-x-0' : 'w-0 opacity-0 -translate-x-10'}`}>
-                <div className="p-4 border-b border-[var(--border-light)] flex items-center justify-between">
-                    <span className="text-sm font-bold text-[var(--text-muted)] uppercase tracking-wider">Query Config</span>
-                </div>
-                <div className="flex-1 overflow-y-auto custom-scrollbar p-0">
-                    <Sidebar 
-                        schema={schema} selectedSet={selectedSet} onSetChange={setSelectedSet} currentEntity={currentEntity}
-                        selectedProps={selectedProps} onPropChange={setSelectedProps} expandProps={expandProps} onExpandChange={setExpandProps}
-                        filter={filter} onFilterChange={setFilter} orderBy={orderBy} onOrderByChange={setOrderBy}
-                        orderByDir={orderByDir} onOrderByDirChange={setOrderByDir} top={top} onTopChange={setTop}
-                        skip={skip} onSkipChange={setSkip} count={count} onCountChange={setCount}
+        {/* Right Main Content */}
+        <div className="flex-1 flex flex-col min-w-0 bg-[#09090b]">
+            
+            {/* Top Bar: URL & Actions */}
+            <div className="h-16 shrink-0 border-b border-zinc-800 flex items-center px-4 gap-4 bg-[#09090b]">
+                <button 
+                    onClick={() => setShowConfig(!showConfig)}
+                    className={`p-2 rounded-lg transition-colors ${showConfig ? 'text-violet-400 bg-violet-500/10' : 'text-zinc-500 hover:text-zinc-300 hover:bg-zinc-800'}`}
+                    title="Toggle Config Panel"
+                >
+                    <SlidersHorizontal className="w-5 h-5" />
+                </button>
+
+                {/* URL Input Bar */}
+                <div className="flex-1 h-10 bg-[#18181b] border border-zinc-800 hover:border-zinc-700 rounded-md flex items-center px-3 relative transition-all group focus-within:ring-1 focus-within:ring-violet-500/50 focus-within:border-violet-500/50">
+                    <span className="text-[10px] font-bold text-zinc-500 mr-3 tracking-wider select-none">GET</span>
+                    <input 
+                        value={displayUrl}
+                        readOnly
+                        className="flex-1 bg-transparent w-full outline-none text-xs font-mono text-zinc-300 placeholder-zinc-700" 
+                        spellCheck={false}
                     />
+                    <div className="flex items-center gap-1 pl-2 border-l border-zinc-800 ml-2">
+                        <button onClick={copyToClipboard} className="p-1.5 rounded hover:bg-zinc-700 text-zinc-500 hover:text-zinc-300 transition-colors" title="Copy URL">
+                            <Copy className="w-3.5 h-3.5" />
+                        </button>
+                        <a href={displayUrl} target="_blank" rel="noreferrer" className="p-1.5 rounded hover:bg-zinc-700 text-zinc-500 hover:text-zinc-300 transition-colors" title="Open in New Tab">
+                            <ExternalLink className="w-3.5 h-3.5" />
+                        </a>
+                    </div>
                 </div>
+
+                {/* Run Button */}
+                <button 
+                    onClick={() => executeQuery()}
+                    disabled={loading || !generatedUrl}
+                    className="h-10 px-6 bg-[#8b5cf6] hover:bg-[#7c3aed] text-white rounded-md font-semibold text-sm shadow-lg shadow-violet-900/20 flex items-center gap-2 transition-all active:scale-95 disabled:opacity-50 disabled:pointer-events-none"
+                >
+                    {loading ? <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> : <Play className="w-4 h-4 fill-current" />}
+                    <span>Run</span>
+                </button>
             </div>
 
-            {/* Right: Results Area */}
-            <div className="flex-1 flex flex-col min-w-0 bg-[var(--bg-page)] relative">
-                
-                {/* Result Tabs */}
-                <div className="px-6 pt-4 flex items-center justify-between shrink-0">
-                    <div className="flex bg-[var(--bg-surface)] p-1 rounded-xl border border-[var(--border-light)] shadow-sm">
-                        {[
-                            { id: 'table', icon: Table, label: 'Table' },
-                            { id: 'json', icon: FileJson, label: 'JSON' },
-                            { id: 'xml', icon: FileCode, label: 'XML' }
-                        ].map(tab => (
-                            <button
-                                key={tab.id}
-                                onClick={() => setActiveTab(tab.id as TabType)}
-                                className={`flex items-center gap-2 px-4 py-1.5 rounded-lg text-sm font-medium transition-all ${
-                                    activeTab === tab.id 
-                                    ? 'bg-violet-50 text-violet-700 shadow-sm' 
-                                    : 'text-[var(--text-muted)] hover:text-[var(--text-main)] hover:bg-[var(--bg-page)]'
-                                }`}
-                            >
-                                <tab.icon className="w-4 h-4" /> {tab.label}
-                            </button>
-                        ))}
-                    </div>
-                    {resultData && resultData['@odata.count'] && (
-                        <div className="text-xs font-mono px-3 py-1.5 rounded-lg bg-emerald-50 text-emerald-600 border border-emerald-100 font-bold">
-                            {resultData['@odata.count']} records
+            {/* Content Area */}
+            <div className="flex-1 p-4 overflow-hidden flex flex-col">
+                {/* Result Container */}
+                <div className="flex-1 w-full bg-[#121214] border border-zinc-800 rounded-xl flex flex-col overflow-hidden relative shadow-2xl">
+                    
+                    {/* Tabs Header (Inside Container) */}
+                    <div className="h-12 border-b border-zinc-800 flex items-center px-4 justify-between bg-[#121214] shrink-0">
+                        <div className="flex items-center gap-2">
+                            <TabButton id="table" label="Table" icon={TableIcon} />
+                            <TabButton id="json" label="JSON" icon={FileJson} />
+                            <TabButton id="xml" label="XML" icon={FileCode} />
                         </div>
-                    )}
-                </div>
+                        {resultData && resultData['@odata.count'] && (
+                            <div className="text-[10px] font-mono font-bold px-2 py-1 rounded bg-zinc-800 text-zinc-400 border border-zinc-700">
+                                {resultData['@odata.count']} records
+                            </div>
+                        )}
+                    </div>
 
-                {/* Content */}
-                <div className="flex-1 p-6 overflow-hidden">
-                    <div className="w-full h-full bg-[var(--bg-surface)] rounded-2xl border border-[var(--border-light)] shadow-sm overflow-hidden relative flex flex-col">
-                        
+                    {/* Viewport */}
+                    <div className="flex-1 overflow-auto bg-[#09090b] relative custom-scrollbar">
+                        {/* Error State */}
                         {error && (
-                            <div className="bg-red-50 border-b border-red-100 p-3 text-red-600 text-sm flex items-center justify-between">
-                                <span>{error}</span>
-                                <button onClick={() => setError(null)}><X className="w-4 h-4"/></button>
+                            <div className="m-6 p-4 bg-red-950/30 border border-red-900/50 rounded-lg flex items-start gap-3">
+                                <div className="p-1 bg-red-900/50 rounded text-red-400 shrink-0"><X className="w-4 h-4" /></div>
+                                <div className="text-sm text-red-300 font-mono break-all">{error}</div>
                             </div>
                         )}
 
+                        {/* Empty State */}
                         {!resultData && !resultXml && !loading && !error && (
-                             <div className="absolute inset-0 flex flex-col items-center justify-center opacity-40 select-none">
-                                <Settings2 className="w-16 h-16 mb-4 text-zinc-300" />
-                                <p className="text-zinc-500 font-medium">Configure and run your query</p>
-                             </div>
+                            <div className="absolute inset-0 flex flex-col items-center justify-center text-zinc-600 select-none">
+                                <Settings2 className="w-16 h-16 mb-4 opacity-20 stroke-1" />
+                                <p className="text-sm font-medium">Configure and run your query</p>
+                            </div>
                         )}
 
-                        <div className="flex-1 overflow-auto custom-scrollbar">
+                        {/* Views */}
+                        <div className="h-full w-full">
                             {activeTab === 'json' && resultData && <div className="p-6"><JsonNode value={resultData} /></div>}
                             
                             {activeTab === 'xml' && resultXml && <div className="p-6"><XmlViewer xmlString={resultXml} /></div>}
@@ -262,24 +278,22 @@ const QueryBuilder: React.FC<QueryBuilderProps> = ({ schema, metadataUrl }) => {
                             {activeTab === 'table' && resultData && (
                                 <div className="h-full flex flex-col">
                                     {drillStack.length > 0 && (
-                                        <div className="flex items-center gap-2 p-3 bg-zinc-50 border-b border-[var(--border-light)] text-sm shrink-0 sticky top-0 z-20">
-                                            <button onClick={() => setDrillStack([])} className="p-1.5 rounded hover:bg-zinc-200 text-zinc-500">
+                                        <div className="flex items-center gap-2 p-3 bg-zinc-900 border-b border-zinc-800 text-xs shrink-0 sticky top-0 z-20">
+                                            <button onClick={() => setDrillStack([])} className="p-1.5 rounded hover:bg-zinc-800 text-zinc-400">
                                                 <ArrowLeft className="w-4 h-4" />
                                             </button>
-                                            <div className="flex items-center overflow-hidden gap-1">
-                                                <span className="text-zinc-400">Root</span>
-                                                {drillStack.map((item, idx) => (
-                                                    <React.Fragment key={idx}>
-                                                        <ChevronRight className="w-3 h-3 text-zinc-300" />
-                                                        <span className="px-2 py-0.5 bg-white border rounded text-xs font-medium truncate max-w-[150px] shadow-sm">
-                                                            {item.title}
-                                                        </span>
-                                                    </React.Fragment>
-                                                ))}
-                                            </div>
+                                            <span className="text-zinc-600">Root</span>
+                                            {drillStack.map((item, idx) => (
+                                                <React.Fragment key={idx}>
+                                                    <ChevronRight className="w-3 h-3 text-zinc-700" />
+                                                    <span className="px-2 py-1 bg-zinc-800 rounded border border-zinc-700 text-zinc-300 truncate max-w-[150px]">
+                                                        {item.title}
+                                                    </span>
+                                                </React.Fragment>
+                                            ))}
                                         </div>
                                     )}
-                                    <div className="flex-1 overflow-auto table-scroll">
+                                    <div className="flex-1 overflow-auto">
                                         <DataTable 
                                             data={currentTableData} 
                                             onDrillDown={(k, d) => setDrillStack(prev => [...prev, { title: k, data: d }])} 
