@@ -5,7 +5,6 @@ export default {
   content: [
     "./entrypoints/**/*.{html,ts,tsx}",
     "./components/**/*.{ts,tsx}",
-    // NextUI 标准配置路径
     "./node_modules/@nextui-org/theme/dist/**/*.{js,ts,jsx,tsx}"
   ],
   darkMode: "class",
@@ -15,12 +14,50 @@ export default {
         sans: ['Inter', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'sans-serif'],
         mono: ['JetBrains Mono', 'ui-monospace', 'SFMono-Regular', 'Menlo', 'Monaco', 'Consolas', 'monospace'],
       },
-      colors: {
-        // 绑定 NextUI 的 CSS 变量 (NextUI 默认使用 --nextui-background 等)
-        background: "hsl(var(--nextui-background) / <alpha-value>)",
-        foreground: "hsl(var(--nextui-foreground) / <alpha-value>)",
-      }
     },
   },
-  plugins: [nextui()],
+  plugins: [nextui({
+    themes: {
+      light: {
+        layout: {
+          hoverOpacity: 0.8, // 鼠标悬停时的透明度
+          dividerWeight: "1px", // 分割线粗细
+          disabledOpacity: 0.5,
+          radius: {
+            small: "6px",
+            medium: "10px",
+            large: "14px",
+          },
+          borderWidth: {
+            small: "1px",
+            medium: "2px",
+            large: "3px",
+          },
+        },
+        colors: {
+          background: "#F9FAFB", // 稍微带点灰的白，护眼且显层次
+          foreground: "#111827",
+          divider: "rgba(17, 24, 39, 0.15)", // 加深亮色模式下的分割线颜色
+          content1: "#FFFFFF", // 卡片背景纯白
+          content2: "#F3F4F6", // 次级背景
+          content3: "#E5E7EB",
+          content4: "#D1D5DB",
+        },
+      },
+      dark: {
+        layout: {
+          hoverOpacity: 0.9,
+          dividerWeight: "1px",
+        },
+        colors: {
+          background: "#000000",
+          foreground: "#ECEDEE",
+          content1: "#18181B", // Zinc 900
+          content2: "#27272A", // Zinc 800
+          content3: "#3F3F46",
+          content4: "#52525B",
+        },
+      },
+    },
+  })],
 }
