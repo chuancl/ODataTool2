@@ -4,53 +4,54 @@
 
 @layer base {
   :root {
-    /* --- Light Mode: 专业企业级配色 (Blue/Grey) --- */
-    --bg-app: #f1f5f9;          /* Slate 100: 整体应用背景 */
-    --bg-panel: #ffffff;        /* White: 面板/卡片背景 */
-    --bg-header: #ffffff;       /* White: 顶部导航栏背景 */
-    --bg-sidebar: #f8fafc;      /* Slate 50: 侧边栏背景 */
+    /* --- Modern SaaS Palette (Zinc & Violet) --- */
     
-    --border-subtle: #e2e8f0;   /* Slate 200: 弱分割线 */
-    --border-strong: #cbd5e1;   /* Slate 300: 强分割线 (面板边缘) */
+    /* Backgrounds */
+    --bg-page: #f4f4f5;        /* Zinc 100 - 浅灰背景 */
+    --bg-surface: #ffffff;     /* White - 卡片背景 */
+    --bg-sidebar: #18181b;     /* Zinc 900 - 深色侧边栏 */
+    --bg-sidebar-hover: #27272a; /* Zinc 800 */
     
-    --text-primary: #0f172a;    /* Slate 900: 主要文字 */
-    --text-secondary: #475569;  /* Slate 600: 次要文字/标签 */
-    --text-muted: #94a3b8;      /* Slate 400: 提示文字 */
+    /* Text */
+    --text-main: #18181b;      /* Zinc 900 */
+    --text-muted: #71717a;     /* Zinc 500 */
+    --text-on-dark: #e4e4e7;   /* Zinc 200 */
     
-    --accent-primary: #4f46e5;  /* Indigo 600: 主品牌色 */
-    --accent-hover: #4338ca;    /* Indigo 700 */
-    --accent-surface: #eef2ff;  /* Indigo 50: 选中态背景 */
-    --accent-text: #4f46e5;     /* Indigo 600: 链接/高亮文字 */
-
-    /* 语法高亮 (Light) */
-    --sh-key: #7c3aed;
-    --sh-str: #16a34a;
-    --sh-num: #2563eb;
-    --sh-bool: #d97706;
+    /* Borders */
+    --border-light: #e4e4e7;   /* Zinc 200 - 极淡的分割线 */
+    
+    /* Brand / Accent */
+    --brand-primary: #7c3aed;  /* Violet 600 */
+    --brand-hover: #6d28d9;    /* Violet 700 */
+    --brand-light: #f5f3ff;    /* Violet 50 */
+    --brand-text: #7c3aed;
+    
+    /* Syntax Highlighting */
+    --sh-key: #db2777;  /* Pink 600 */
+    --sh-str: #059669;  /* Emerald 600 */
+    --sh-num: #2563eb;  /* Blue 600 */
+    --sh-bool: #d97706; /* Amber 600 */
   }
 
   [data-theme='dark'] {
-    /* --- Dark Mode: 深邃开发者风格 (Midnight) --- */
-    --bg-app: #0f172a;          /* Slate 900 */
-    --bg-panel: #1e293b;        /* Slate 800 */
-    --bg-header: #0f172a;       /* Slate 900 */
-    --bg-sidebar: #111827;      /* Gray 900 */
+    --bg-page: #000000;         /* Black */
+    --bg-surface: #18181b;      /* Zinc 900 */
+    --bg-sidebar: #09090b;      /* Zinc 950 */
+    --bg-sidebar-hover: #27272a;
     
-    --border-subtle: #334155;   /* Slate 700 */
-    --border-strong: #475569;   /* Slate 600 */
+    --text-main: #f4f4f5;       /* Zinc 100 */
+    --text-muted: #a1a1aa;      /* Zinc 400 */
+    --text-on-dark: #e4e4e7;
     
-    --text-primary: #f8fafc;    /* Slate 50 */
-    --text-secondary: #94a3b8;  /* Slate 400 */
-    --text-muted: #64748b;      /* Slate 500 */
+    --border-light: #27272a;    /* Zinc 800 */
     
-    --accent-primary: #6366f1;  /* Indigo 500 */
-    --accent-hover: #818cf8;    /* Indigo 400 */
-    --accent-surface: #312e81;  /* Indigo 900 */
-    --accent-text: #818cf8;     /* Indigo 400 */
+    --brand-primary: #8b5cf6;   /* Violet 500 */
+    --brand-hover: #a78bfa;     /* Violet 400 */
+    --brand-light: #2e1065;     /* Violet 950 */
+    --brand-text: #a78bfa;
 
-    /* 语法高亮 (Dark) */
-    --sh-key: #c084fc;
-    --sh-str: #4ade80;
+    --sh-key: #f472b6;
+    --sh-str: #34d399;
     --sh-num: #60a5fa;
     --sh-bool: #fbbf24;
   }
@@ -59,80 +60,84 @@
 body {
   margin: 0;
   padding: 0;
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-  background-color: var(--bg-app);
-  color: var(--text-primary);
-  font-size: 14px; /* 调大基准字号 */
+  font-family: 'Inter', sans-serif;
+  background-color: var(--bg-page);
+  color: var(--text-main);
+  font-size: 14px;
   line-height: 1.5;
   -webkit-font-smoothing: antialiased;
+  overflow: hidden; /* App handles scrolling */
 }
 
-/* --- Utilities --- */
+/* 点阵背景图案 */
+.bg-grid-pattern {
+  background-image: radial-gradient(var(--text-muted) 1px, transparent 1px);
+  background-size: 24px 24px;
+  opacity: 0.15;
+}
+
 @layer components {
-  /* 面板容器 */
-  .panel-container {
-    background-color: var(--bg-panel);
-    border: 1px solid var(--border-strong);
-    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  /* 卡片基础样式 */
+  .card-base {
+    background-color: var(--bg-surface);
+    border-radius: 16px; /* 大圆角 */
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+    border: 1px solid var(--border-light);
+  }
+  
+  /* 现代输入框 - 无边框感，重背景 */
+  .modern-input {
+    @apply w-full px-4 py-2.5 rounded-xl outline-none transition-all duration-200;
+    background-color: var(--bg-page);
+    color: var(--text-main);
+    border: 1px solid transparent;
+  }
+  .modern-input:focus {
+    background-color: var(--bg-surface);
+    border-color: var(--brand-primary);
+    box-shadow: 0 0 0 3px var(--brand-light);
   }
 
-  /* 通用输入框 */
-  .input-control {
-    @apply w-full px-3 py-2 text-sm rounded border outline-none transition-all;
-    background-color: var(--bg-panel);
-    border-color: var(--border-strong);
-    color: var(--text-primary);
+  /* 现代按钮 */
+  .btn-modern-primary {
+    @apply px-5 py-2.5 rounded-xl font-semibold text-white transition-all shadow-md active:scale-95 hover:shadow-lg flex items-center justify-center gap-2;
+    background: linear-gradient(135deg, var(--brand-primary), var(--brand-hover));
   }
-  .input-control:focus {
-    border-color: var(--accent-primary);
-    box-shadow: 0 0 0 2px var(--accent-surface);
+  
+  .btn-modern-ghost {
+    @apply px-4 py-2 rounded-lg font-medium text-sm transition-colors flex items-center gap-2;
+    color: var(--text-muted);
   }
-
-  /* 按钮 */
-  .btn-primary {
-    @apply px-4 py-2 text-sm font-semibold rounded text-white shadow-sm transition-all active:translate-y-px;
-    background-color: var(--accent-primary);
+  .btn-modern-ghost:hover {
+    color: var(--text-main);
+    background-color: rgba(0,0,0,0.05);
   }
-  .btn-primary:hover { background-color: var(--accent-hover); }
-  .btn-primary:disabled { opacity: 0.6; cursor: not-allowed; }
-
-  .btn-default {
-    @apply px-3 py-2 text-sm font-medium rounded border transition-all active:translate-y-px;
-    background-color: var(--bg-panel);
-    border-color: var(--border-strong);
-    color: var(--text-secondary);
+  
+  /* 玻璃效果 */
+  .glass-panel {
+    background: rgba(255, 255, 255, 0.7);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
   }
-  .btn-default:hover {
-    background-color: var(--bg-app);
-    border-color: var(--accent-primary);
-    color: var(--accent-text);
+  [data-theme='dark'] .glass-panel {
+    background: rgba(24, 24, 27, 0.7);
   }
 
-  /* 滚动条美化 */
+  /* 滚动条 */
   ::-webkit-scrollbar {
-    width: 10px;
-    height: 10px;
+    width: 8px;
+    height: 8px;
   }
   ::-webkit-scrollbar-track {
     background: transparent;
   }
   ::-webkit-scrollbar-thumb {
-    background-color: var(--border-strong);
-    border: 2px solid transparent;
-    background-clip: content-box;
+    background-color: rgba(150, 150, 150, 0.2);
     border-radius: 99px;
   }
   ::-webkit-scrollbar-thumb:hover {
-    background-color: var(--text-muted);
-  }
-  /* 表格中的滚动条可以更细一点 */
-  .table-scroll::-webkit-scrollbar {
-      height: 12px;
-      width: 12px;
+    background-color: rgba(150, 150, 150, 0.4);
   }
 }
 
-/* 覆盖 Lucide 图标默认 stroke */
-.lucide {
-  stroke-width: 1.5px;
-}
+.lucide { stroke-width: 2px; }
