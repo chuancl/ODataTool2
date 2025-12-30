@@ -1,10 +1,10 @@
-import React, { useState, useEffect, useMemo } from 'react';
-import { Play, Copy, X, Table as TableIcon, FileJson, FileCode, ArrowLeft, ChevronRight, ExternalLink, Settings2, SlidersHorizontal } from 'lucide-react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
+import { Play, Copy, X, Table as TableIcon, FileJson, FileCode, ArrowLeft, ChevronRight, ExternalLink, Settings2, SlidersHorizontal, PanelLeftClose, PanelLeftOpen } from 'lucide-react';
 import { ODataSchema } from '../types';
 import { normalizeODataResponse } from './query-builder/utils';
 import Sidebar from './query-builder/Sidebar';
-import JsonNode from './query-builder/JsonViewer';
-import XmlViewer from './query-builder/XmlViewer';
+import JsonNode from './query-builder/JsonViewer'; // 重写为库
+import XmlViewer from './query-builder/XmlViewer'; // 重写为库
 import DataTable from './query-builder/TableViewer';
 
 interface QueryBuilderProps {
@@ -30,6 +30,10 @@ const QueryBuilder: React.FC<QueryBuilderProps> = ({ schema, metadataUrl }) => {
   const [skip, setSkip] = useState<number | ''>('');
   const [count, setCount] = useState(false);
   
+  // Custom URL State
+  const [urlInput, setUrlInput] = useState('');
+  const [isUrlDirty, setIsUrlDirty] = useState(false); // 用户是否手动修改过 URL
+
   // UI State
   const [activeTab, setActiveTab] = useState<TabType>('table');
   const [resultData, setResultData] = useState<any>(null);
@@ -37,10 +41,9 @@ const QueryBuilder: React.FC<QueryBuilderProps> = ({ schema, metadataUrl }) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [drillStack, setDrillStack] = useState<Array<{ title: string, data: any }>>([]);
-  
-  // Sidebar visibility
   const [showConfig, setShowConfig] = useState(true);
 
+  // Initialization
   useEffect(() => {
     if (schema.entitySets.length > 0 && !selectedSet) {
       setSelectedSet(schema.entitySets[0].name);
@@ -62,7 +65,7 @@ const QueryBuilder: React.FC<QueryBuilderProps> = ({ schema, metadataUrl }) => {
       return map;
   }, [currentEntity]);
 
-  // Reset results on entity change
+  // Reset when entity changes
   useEffect(() => {
     setSelectedProps(new Set());
     setExpandProps(new Set());
@@ -74,8 +77,10 @@ const QueryBuilder: React.FC<QueryBuilderProps> = ({ schema, metadataUrl }) => {
     setResultXml('');
     setError(null);
     setDrillStack([]);
+    setIsUrlDirty(false); // Reset dirty state
   }, [selectedSet]);
 
+  // Auto-generate URL from sidebar inputs
   const generatedUrl = useMemo(() => {
     if (!selectedSet) return '';
     const params = new URLSearchParams();
@@ -96,13 +101,22 @@ const QueryBuilder: React.FC<QueryBuilderProps> = ({ schema, metadataUrl }) => {
     return `${serviceRoot}/${selectedSet}${queryString ? '?' + queryString : ''}`;
   }, [serviceRoot, selectedSet, selectedProps, expandProps, filter, orderBy, orderByDir, top, skip, count, currentEntity, schema.version]);
 
-  const displayUrl = useMemo(() => {
-    if (!generatedUrl) return '';
-    try { return decodeURIComponent(generatedUrl.replace(/\+/g, '%20')); } catch (e) { return generatedUrl; }
-  }, [generatedUrl]);
+  // Sync Input with Generated URL (unless dirty)
+  useEffect(() => {
+      if (!isUrlDirty) {
+          setUrlInput(generatedUrl);
+      }
+  }, [generatedUrl, isUrlDirty]);
+
+  const handleUrlInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+      setUrlInput(e.target.value);
+      setIsUrlDirty(true);
+  };
 
   const executeQuery = async (forceFormat?: 'json' | 'xml') => {
-    if (!generatedUrl) return;
+    const targetUrl = urlInput; // Use the input box value
+    if (!targetUrl) return;
+
     setLoading(true);
     setError(null);
     setDrillStack([]);
@@ -115,7 +129,7 @@ const QueryBuilder: React.FC<QueryBuilderProps> = ({ schema, metadataUrl }) => {
       } else {
           headers['Accept'] = 'application/json, application/json;odata.metadata=minimal';
       }
-      const res = await fetch(generatedUrl, { headers });
+      const res = await fetch(targetUrl, { headers });
       if (!res.ok) throw new Error(`HTTP Error ${res.status}: ${res.statusText}`);
       const text = await res.text();
       
@@ -124,10 +138,8 @@ const QueryBuilder: React.FC<QueryBuilderProps> = ({ schema, metadataUrl }) => {
               const json = JSON.parse(text);
               setResultData(json);
               setResultXml('');
-              // If we were in XML tab but got JSON, switch to Table or JSON
               if (activeTab === 'xml') setActiveTab('json');
           } catch (e) {
-              // Maybe it's XML returned despite requesting JSON
               if (text.trim().startsWith('<')) {
                   setResultXml(text);
                   setResultData(null);
@@ -140,18 +152,11 @@ const QueryBuilder: React.FC<QueryBuilderProps> = ({ schema, metadataUrl }) => {
           setResultXml(text);
           setResultData(null);
       }
-    } catch (e: any) {
+  } catch (e: any) {
       setError(e.message);
     } finally {
       setLoading(false);
     }
-  };
-
-  const handleTabChange = (newTab: TabType) => {
-      setActiveTab(newTab);
-      // Auto-re-execute if we switch data formats and don't have data yet
-      if (newTab === 'xml' && !resultXml && generatedUrl) executeQuery('xml');
-      if ((newTab === 'json' || newTab === 'table') && !resultData && generatedUrl && !resultXml) executeQuery('json');
   };
 
   const currentTableData = useMemo(() => {
@@ -160,15 +165,15 @@ const QueryBuilder: React.FC<QueryBuilderProps> = ({ schema, metadataUrl }) => {
       return [];
   }, [resultData, drillStack]);
 
-  const copyToClipboard = () => navigator.clipboard.writeText(displayUrl);
+  const copyToClipboard = () => navigator.clipboard.writeText(urlInput);
 
   const TabButton = ({ id, label, icon: Icon }: { id: TabType, label: string, icon: any }) => (
       <button 
-        onClick={() => handleTabChange(id)}
-        className={`flex items-center gap-2 px-4 py-1.5 rounded-lg text-xs font-semibold transition-all ${
+        onClick={() => setActiveTab(id)}
+        className={`flex items-center gap-2 px-3 py-1.5 rounded-md text-xs font-medium transition-all ${
             activeTab === id 
-            ? 'bg-violet-600 text-white shadow-md shadow-violet-900/20' 
-            : 'text-zinc-500 hover:text-zinc-300 hover:bg-zinc-800'
+            ? 'bg-[var(--accent-color)] text-white shadow-sm' 
+            : 'text-[var(--text-secondary)] hover:bg-[var(--bg-app)]'
         }`}
       >
           <Icon className="w-3.5 h-3.5" />
@@ -177,9 +182,9 @@ const QueryBuilder: React.FC<QueryBuilderProps> = ({ schema, metadataUrl }) => {
   );
 
   return (
-    <div className="flex h-full w-full bg-[#09090b] text-zinc-200 font-sans overflow-hidden">
+    <div className="flex h-full w-full bg-[var(--bg-app)] text-[var(--text-primary)] font-sans overflow-hidden">
         {/* Left Sidebar (Config) */}
-        <div className={`shrink-0 border-r border-zinc-800 bg-[#121214] transition-all duration-300 ease-in-out ${showConfig ? 'w-[320px] translate-x-0' : 'w-0 -translate-x-full opacity-0 overflow-hidden'}`}>
+        <div className={`shrink-0 border-r border-[var(--border-color)] bg-[var(--bg-sidebar)] transition-all duration-200 ease-in-out flex flex-col ${showConfig ? 'w-[280px]' : 'w-0 overflow-hidden'}`}>
              <Sidebar 
                 schema={schema} selectedSet={selectedSet} onSetChange={setSelectedSet} currentEntity={currentEntity}
                 selectedProps={selectedProps} onPropChange={setSelectedProps} expandProps={expandProps} onExpandChange={setExpandProps}
@@ -190,33 +195,35 @@ const QueryBuilder: React.FC<QueryBuilderProps> = ({ schema, metadataUrl }) => {
         </div>
 
         {/* Right Main Content */}
-        <div className="flex-1 flex flex-col min-w-0 bg-[#09090b]">
+        <div className="flex-1 flex flex-col min-w-0 bg-[var(--bg-app)]">
             
-            {/* Top Bar: URL & Actions */}
-            <div className="h-16 shrink-0 border-b border-zinc-800 flex items-center px-4 gap-4 bg-[#09090b]">
+            {/* Top Bar */}
+            <div className="h-12 shrink-0 border-b border-[var(--border-color)] flex items-center px-3 gap-3 bg-[var(--bg-header)]">
                 <button 
                     onClick={() => setShowConfig(!showConfig)}
-                    className={`p-2 rounded-lg transition-colors ${showConfig ? 'text-violet-400 bg-violet-500/10' : 'text-zinc-500 hover:text-zinc-300 hover:bg-zinc-800'}`}
+                    className="p-1.5 rounded-md text-[var(--text-secondary)] hover:bg-[var(--bg-sidebar)] transition-colors border border-transparent hover:border-[var(--border-color)]"
                     title="Toggle Config Panel"
                 >
-                    <SlidersHorizontal className="w-5 h-5" />
+                    {showConfig ? <PanelLeftClose className="w-4 h-4" /> : <PanelLeftOpen className="w-4 h-4" />}
                 </button>
 
-                {/* URL Input Bar */}
-                <div className="flex-1 h-10 bg-[#18181b] border border-zinc-800 hover:border-zinc-700 rounded-md flex items-center px-3 relative transition-all group focus-within:ring-1 focus-within:ring-violet-500/50 focus-within:border-violet-500/50">
-                    <span className="text-[10px] font-bold text-zinc-500 mr-3 tracking-wider select-none">GET</span>
+                {/* Editable URL Input */}
+                <div className="flex-1 h-8 bg-[var(--bg-input)] border border-[var(--border-color)] rounded flex items-center px-2 relative transition-all focus-within:border-[var(--accent-color)] focus-within:ring-1 focus-within:ring-[var(--accent-color)]">
+                    <span className="text-[10px] font-bold text-[var(--text-muted)] mr-2 select-none bg-[var(--bg-sidebar)] px-1 rounded">GET</span>
                     <input 
-                        value={displayUrl}
-                        readOnly
-                        className="flex-1 bg-transparent w-full outline-none text-xs font-mono text-zinc-300 placeholder-zinc-700" 
+                        value={urlInput}
+                        onChange={handleUrlInputChange}
+                        onKeyDown={(e) => e.key === 'Enter' && executeQuery()}
+                        className="flex-1 bg-transparent w-full outline-none text-xs font-mono text-[var(--text-primary)] placeholder-[var(--text-muted)]" 
                         spellCheck={false}
+                        placeholder="https://..."
                     />
-                    <div className="flex items-center gap-1 pl-2 border-l border-zinc-800 ml-2">
-                        <button onClick={copyToClipboard} className="p-1.5 rounded hover:bg-zinc-700 text-zinc-500 hover:text-zinc-300 transition-colors" title="Copy URL">
-                            <Copy className="w-3.5 h-3.5" />
+                    <div className="flex items-center gap-1 pl-2 border-l border-[var(--border-color)] ml-2">
+                        <button onClick={copyToClipboard} className="p-1 rounded hover:bg-[var(--bg-sidebar)] text-[var(--text-secondary)] transition-colors" title="Copy URL">
+                            <Copy className="w-3 h-3" />
                         </button>
-                        <a href={displayUrl} target="_blank" rel="noreferrer" className="p-1.5 rounded hover:bg-zinc-700 text-zinc-500 hover:text-zinc-300 transition-colors" title="Open in New Tab">
-                            <ExternalLink className="w-3.5 h-3.5" />
+                        <a href={urlInput} target="_blank" rel="noreferrer" className="p-1 rounded hover:bg-[var(--bg-sidebar)] text-[var(--text-secondary)] transition-colors" title="Open in New Tab">
+                            <ExternalLink className="w-3 h-3" />
                         </a>
                     </div>
                 </div>
@@ -224,69 +231,67 @@ const QueryBuilder: React.FC<QueryBuilderProps> = ({ schema, metadataUrl }) => {
                 {/* Run Button */}
                 <button 
                     onClick={() => executeQuery()}
-                    disabled={loading || !generatedUrl}
-                    className="h-10 px-6 bg-[#8b5cf6] hover:bg-[#7c3aed] text-white rounded-md font-semibold text-sm shadow-lg shadow-violet-900/20 flex items-center gap-2 transition-all active:scale-95 disabled:opacity-50 disabled:pointer-events-none"
+                    disabled={loading || !urlInput}
+                    className="h-8 px-4 bg-[var(--accent-color)] hover:bg-[var(--accent-hover)] text-white rounded font-medium text-xs shadow-sm flex items-center gap-2 transition-all active:translate-y-px disabled:opacity-50 disabled:pointer-events-none"
                 >
-                    {loading ? <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> : <Play className="w-4 h-4 fill-current" />}
+                    {loading ? <div className="w-3 h-3 border-2 border-white/30 border-t-white rounded-full animate-spin" /> : <Play className="w-3 h-3 fill-current" />}
                     <span>Run</span>
                 </button>
             </div>
 
-            {/* Content Area */}
-            <div className="flex-1 p-4 overflow-hidden flex flex-col">
-                {/* Result Container */}
-                <div className="flex-1 w-full bg-[#121214] border border-zinc-800 rounded-xl flex flex-col overflow-hidden relative shadow-2xl">
+            {/* Content Area - 减少 Padding */}
+            <div className="flex-1 p-2 overflow-hidden flex flex-col">
+                <div className="flex-1 w-full bg-[var(--bg-panel)] border border-[var(--border-color)] rounded-md flex flex-col overflow-hidden relative shadow-sm">
                     
-                    {/* Tabs Header (Inside Container) */}
-                    <div className="h-12 border-b border-zinc-800 flex items-center px-4 justify-between bg-[#121214] shrink-0">
+                    {/* Tabs Header */}
+                    <div className="h-10 border-b border-[var(--border-color)] flex items-center px-3 justify-between bg-[var(--bg-header)] shrink-0">
                         <div className="flex items-center gap-2">
                             <TabButton id="table" label="Table" icon={TableIcon} />
                             <TabButton id="json" label="JSON" icon={FileJson} />
                             <TabButton id="xml" label="XML" icon={FileCode} />
                         </div>
                         {resultData && resultData['@odata.count'] && (
-                            <div className="text-[10px] font-mono font-bold px-2 py-1 rounded bg-zinc-800 text-zinc-400 border border-zinc-700">
+                            <div className="text-[10px] font-mono px-2 py-0.5 rounded bg-[var(--accent-bg)] text-[var(--accent-color)] border border-[var(--accent-color)]/20">
                                 {resultData['@odata.count']} records
                             </div>
                         )}
                     </div>
 
                     {/* Viewport */}
-                    <div className="flex-1 overflow-auto bg-[#09090b] relative custom-scrollbar">
-                        {/* Error State */}
+                    <div className="flex-1 overflow-hidden relative bg-[var(--bg-panel)]">
                         {error && (
-                            <div className="m-6 p-4 bg-red-950/30 border border-red-900/50 rounded-lg flex items-start gap-3">
-                                <div className="p-1 bg-red-900/50 rounded text-red-400 shrink-0"><X className="w-4 h-4" /></div>
-                                <div className="text-sm text-red-300 font-mono break-all">{error}</div>
+                            <div className="absolute top-0 left-0 right-0 z-20 m-2 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded text-red-600 dark:text-red-400 text-xs flex items-start gap-2">
+                                <X className="w-4 h-4 shrink-0 mt-0.5" />
+                                <div className="font-mono break-all">{error}</div>
+                                <button onClick={() => setError(null)} className="ml-auto hover:bg-red-100 dark:hover:bg-red-800/40 rounded p-1"><X className="w-3 h-3"/></button>
                             </div>
                         )}
 
-                        {/* Empty State */}
                         {!resultData && !resultXml && !loading && !error && (
-                            <div className="absolute inset-0 flex flex-col items-center justify-center text-zinc-600 select-none">
-                                <Settings2 className="w-16 h-16 mb-4 opacity-20 stroke-1" />
-                                <p className="text-sm font-medium">Configure and run your query</p>
+                            <div className="absolute inset-0 flex flex-col items-center justify-center text-[var(--text-muted)] select-none">
+                                <Settings2 className="w-12 h-12 mb-3 opacity-20" />
+                                <p className="text-xs font-medium">Configure and run your query</p>
                             </div>
                         )}
 
-                        {/* Views */}
-                        <div className="h-full w-full">
-                            {activeTab === 'json' && resultData && <div className="p-6"><JsonNode value={resultData} /></div>}
+                        {/* 使用 overflow-auto 确保内容区域自身滚动 */}
+                        <div className="w-full h-full overflow-hidden">
+                            {activeTab === 'json' && resultData && <JsonNode value={resultData} />}
                             
-                            {activeTab === 'xml' && resultXml && <div className="p-6"><XmlViewer xmlString={resultXml} /></div>}
+                            {activeTab === 'xml' && resultXml && <XmlViewer xmlString={resultXml} />}
                             
                             {activeTab === 'table' && resultData && (
                                 <div className="h-full flex flex-col">
                                     {drillStack.length > 0 && (
-                                        <div className="flex items-center gap-2 p-3 bg-zinc-900 border-b border-zinc-800 text-xs shrink-0 sticky top-0 z-20">
-                                            <button onClick={() => setDrillStack([])} className="p-1.5 rounded hover:bg-zinc-800 text-zinc-400">
-                                                <ArrowLeft className="w-4 h-4" />
+                                        <div className="flex items-center gap-2 p-2 bg-[var(--bg-sidebar)] border-b border-[var(--border-color)] text-xs shrink-0 sticky top-0 z-20">
+                                            <button onClick={() => setDrillStack([])} className="p-1 rounded hover:bg-[var(--border-color)] text-[var(--text-secondary)]">
+                                                <ArrowLeft className="w-3.5 h-3.5" />
                                             </button>
-                                            <span className="text-zinc-600">Root</span>
+                                            <span className="text-[var(--text-muted)]">Root</span>
                                             {drillStack.map((item, idx) => (
                                                 <React.Fragment key={idx}>
-                                                    <ChevronRight className="w-3 h-3 text-zinc-700" />
-                                                    <span className="px-2 py-1 bg-zinc-800 rounded border border-zinc-700 text-zinc-300 truncate max-w-[150px]">
+                                                    <ChevronRight className="w-3 h-3 text-[var(--text-muted)]" />
+                                                    <span className="px-1.5 py-0.5 bg-[var(--bg-app)] rounded border border-[var(--border-color)] text-[var(--text-primary)] truncate max-w-[150px]">
                                                         {item.title}
                                                     </span>
                                                 </React.Fragment>
