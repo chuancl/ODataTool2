@@ -1,5 +1,5 @@
-import React, { useState, useEffect, useMemo, useRef } from 'react';
-import { Play, Copy, X, Table as TableIcon, FileJson, FileCode, ArrowLeft, ChevronRight, Terminal, ExternalLink, Link2, Settings2, DatabaseZap } from 'lucide-react';
+import React, { useState, useEffect, useMemo } from 'react';
+import { Play, Copy, X, Table as TableIcon, FileJson, FileCode, ArrowLeft, ChevronRight, ExternalLink, Link2, Database, Download } from 'lucide-react';
 import { ODataSchema } from '../types';
 import { normalizeODataResponse } from './query-builder/utils';
 import Sidebar from './query-builder/Sidebar';
@@ -35,6 +35,7 @@ const QueryBuilder: React.FC<QueryBuilderProps> = ({ schema, metadataUrl }) => {
   const [error, setError] = useState<string | null>(null);
   const [drillStack, setDrillStack] = useState<Array<{ title: string, data: any }>>([]);
 
+  // Init selection
   useEffect(() => {
     if (schema.entitySets.length > 0 && !selectedSet) {
       setSelectedSet(schema.entitySets[0].name);
@@ -56,6 +57,7 @@ const QueryBuilder: React.FC<QueryBuilderProps> = ({ schema, metadataUrl }) => {
       return map;
   }, [currentEntity]);
 
+  // Reset fields on entity change
   useEffect(() => {
     setSelectedProps(new Set());
     setExpandProps(new Set());
@@ -109,7 +111,7 @@ const QueryBuilder: React.FC<QueryBuilderProps> = ({ schema, metadataUrl }) => {
           headers['Accept'] = 'application/json, application/json;odata.metadata=minimal';
       }
       const res = await fetch(generatedUrl, { headers });
-      if (!res.ok) throw new Error(`请求失败 (${res.status}): ${res.statusText}`);
+      if (!res.ok) throw new Error(`Status ${res.status}: ${res.statusText}`);
       const text = await res.text();
       if (targetFormat === 'json') {
           try {
@@ -121,9 +123,9 @@ const QueryBuilder: React.FC<QueryBuilderProps> = ({ schema, metadataUrl }) => {
                   setResultXml(text);
                   setResultData(null);
                   setActiveTab('xml');
-                  throw new Error("服务端返回了 XML 格式数据，已自动切至 XML 视图。");
+                  throw new Error("Received XML response, switched to XML view.");
               }
-              throw new Error("JSON 解析失败。");
+              throw new Error("Failed to parse JSON.");
           }
       } else {
           setResultXml(text);
@@ -142,9 +144,7 @@ const QueryBuilder: React.FC<QueryBuilderProps> = ({ schema, metadataUrl }) => {
       if ((newTab === 'json' || newTab === 'table') && !resultData) executeQuery('json');
   };
 
-  const copyToClipboard = () => {
-    navigator.clipboard.writeText(displayUrl);
-  };
+  const copyToClipboard = () => navigator.clipboard.writeText(displayUrl);
 
   const currentTableData = useMemo(() => {
       if (drillStack.length > 0) return normalizeODataResponse(drillStack[drillStack.length - 1].data);
@@ -153,7 +153,8 @@ const QueryBuilder: React.FC<QueryBuilderProps> = ({ schema, metadataUrl }) => {
   }, [resultData, drillStack]);
 
   return (
-    <div className="flex h-full bg-canvas overflow-hidden">
+    <div className="flex h-full w-full bg-canvas overflow-hidden">
+      {/* 侧边栏 */}
       <Sidebar 
         schema={schema} selectedSet={selectedSet} onSetChange={setSelectedSet} currentEntity={currentEntity}
         selectedProps={selectedProps} onPropChange={setSelectedProps} expandProps={expandProps} onExpandChange={setExpandProps}
@@ -162,141 +163,126 @@ const QueryBuilder: React.FC<QueryBuilderProps> = ({ schema, metadataUrl }) => {
         skip={skip} onSkipChange={setSkip} count={count} onCountChange={setCount}
       />
 
-      <div className="flex-1 flex flex-col min-w-0">
-        {/* 控制面板 */}
-        <div className="bg-surface border-b-2 border-border p-12 z-10 shrink-0 shadow-sm">
-           <div className="flex items-center justify-between mb-8">
-              <div className="flex items-center gap-5">
-                 <div className="p-3 bg-brand text-brand-fg rounded-2xl shadow-lg shadow-brand/20">
-                    <Link2 className="w-7 h-7" />
-                 </div>
-                 <div>
-                    <h2 className="font-black text-xl text-text-main tracking-tight uppercase">查询 API 终端</h2>
-                    <p className="text-xs text-text-muted font-black tracking-widest uppercase opacity-60">REST API ENDPOINT</p>
-                 </div>
-              </div>
-              <div className="flex gap-4">
-                <button onClick={copyToClipboard} className="btn-secondary">
-                    <Copy className="w-5 h-5" /> 复制链接
-                </button>
-                <a href={displayUrl} target="_blank" rel="noreferrer" className="btn-secondary">
-                    <ExternalLink className="w-5 h-5" /> 外部打开
-                </a>
-              </div>
-           </div>
-           
-           <div className="bg-canvas border-2 border-border rounded-[2rem] p-8 mb-10 relative overflow-hidden group shadow-inner">
-              <div className="absolute top-0 right-0 p-2 px-6 text-xs font-black uppercase tracking-widest text-text-muted bg-border rounded-bl-3xl">HTTP GET</div>
-              <code className="text-lg font-mono text-brand break-all whitespace-pre-wrap block max-h-40 overflow-y-auto custom-scrollbar leading-relaxed selection:bg-brand selection:text-brand-fg font-bold">
-                {displayUrl}
-              </code>
-           </div>
-
-           <div className="flex items-center justify-between">
-                <div className="inline-flex bg-canvas p-2 rounded-[1.5rem] border-2 border-border shadow-md">
-                    <button 
-                        onClick={() => handleTabChange('json')}
-                        className={`flex items-center gap-3 px-8 py-3 rounded-2xl text-sm font-black transition-all ${activeTab === 'json' ? 'bg-brand text-brand-fg shadow-xl scale-[1.05]' : 'text-text-muted hover:text-text-main'}`}
-                    >
-                        <FileJson className="w-5 h-5" /> JSON 树
+      {/* 主视图区 */}
+      <div className="flex-1 flex flex-col min-w-0 bg-surface">
+        {/* 顶部工具条：URL Bar */}
+        <div className="border-b border-border bg-surface-muted p-2 flex flex-col gap-2 shrink-0">
+           {/* URL Input Area */}
+           <div className="flex items-stretch gap-2">
+                <div className="flex-1 flex items-center bg-white dark:bg-slate-800 border border-border rounded-md px-3 py-1.5 shadow-sm transition-all focus-within:ring-1 focus-within:ring-brand focus-within:border-brand">
+                    <span className="text-[10px] font-bold text-text-muted mr-2 px-1.5 py-0.5 bg-slate-100 dark:bg-slate-700 rounded select-none">GET</span>
+                    <input 
+                        readOnly 
+                        value={displayUrl} 
+                        className="flex-1 bg-transparent text-xs font-mono text-text-main outline-none w-full" 
+                        onFocus={(e) => e.target.select()}
+                    />
+                    <div className="h-4 w-[1px] bg-border mx-2"></div>
+                    <button onClick={copyToClipboard} className="text-text-muted hover:text-text-main" title="Copy URL">
+                        <Copy className="w-3.5 h-3.5" />
                     </button>
-                    <button 
-                        onClick={() => handleTabChange('table')}
-                        className={`flex items-center gap-3 px-8 py-3 rounded-2xl text-sm font-black transition-all ${activeTab === 'table' ? 'bg-brand text-brand-fg shadow-xl scale-[1.05]' : 'text-text-muted hover:text-text-main'}`}
-                    >
-                        <TableIcon className="w-5 h-5" /> 数据网格
-                    </button>
-                    <button 
-                        onClick={() => handleTabChange('xml')}
-                        className={`flex items-center gap-3 px-8 py-3 rounded-2xl text-sm font-black transition-all ${activeTab === 'xml' ? 'bg-brand text-brand-fg shadow-xl scale-[1.05]' : 'text-text-muted hover:text-text-main'}`}
-                    >
-                        <FileCode className="w-5 h-5" /> XML 源码
-                    </button>
+                    <a href={displayUrl} target="_blank" rel="noreferrer" className="ml-2 text-text-muted hover:text-text-main" title="Open in New Tab">
+                        <ExternalLink className="w-3.5 h-3.5" />
+                    </a>
                 </div>
-
                 <button 
                     onClick={() => executeQuery()} 
                     disabled={loading || !generatedUrl}
-                    className="btn-primary min-w-[200px] justify-center"
+                    className="btn-primary px-4"
                 >
-                    {loading ? (
-                    <div className="w-6 h-6 border-4 border-brand-fg/30 border-t-brand-fg rounded-full animate-spin" />
-                    ) : (
-                    <DatabaseZap className="w-6 h-6" />
-                    )}
-                    发送请求 (ENTER)
+                    {loading ? <div className="w-3 h-3 border-2 border-white/30 border-t-white rounded-full animate-spin" /> : <Play className="w-3.5 h-3.5 fill-current" />}
+                    <span className="ml-1">Run</span>
                 </button>
+           </div>
+           
+           {/* Tabs & Status */}
+           <div className="flex items-center justify-between pl-1">
+                <div className="flex gap-1">
+                    <button 
+                        onClick={() => handleTabChange('json')}
+                        className={`px-3 py-1.5 text-xs font-medium rounded-t-md border-b-2 transition-all ${activeTab === 'json' ? 'border-brand text-brand bg-white dark:bg-slate-800' : 'border-transparent text-text-muted hover:text-text-main'}`}
+                    >
+                        JSON Tree
+                    </button>
+                    <button 
+                        onClick={() => handleTabChange('table')}
+                        className={`px-3 py-1.5 text-xs font-medium rounded-t-md border-b-2 transition-all ${activeTab === 'table' ? 'border-brand text-brand bg-white dark:bg-slate-800' : 'border-transparent text-text-muted hover:text-text-main'}`}
+                    >
+                        Table Grid
+                    </button>
+                    <button 
+                        onClick={() => handleTabChange('xml')}
+                        className={`px-3 py-1.5 text-xs font-medium rounded-t-md border-b-2 transition-all ${activeTab === 'xml' ? 'border-brand text-brand bg-white dark:bg-slate-800' : 'border-transparent text-text-muted hover:text-text-main'}`}
+                    >
+                        Raw XML
+                    </button>
+                </div>
+                {resultData && resultData['@odata.count'] && (
+                    <span className="text-[10px] bg-brand/10 text-brand px-2 py-0.5 rounded font-mono font-medium">
+                        Total: {resultData['@odata.count']}
+                    </span>
+                )}
            </div>
         </div>
 
-        {/* 结果显示区 */}
-        <div className="flex-1 overflow-auto bg-canvas flex flex-col">
+        {/* 内容显示区 */}
+        <div className="flex-1 overflow-hidden relative bg-white dark:bg-slate-900">
            {error && (
-             <div className="m-12 p-10 bg-red-500/10 border-2 border-red-500 rounded-[2.5rem] text-red-500 text-base flex items-start gap-6 animate-in fade-in zoom-in duration-300 shadow-2xl">
-                <div className="bg-red-500 text-white w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 shadow-lg shadow-red-500/20"><X className="w-6 h-6" /></div>
-                <div className="flex-1">
-                    <p className="font-black text-sm uppercase tracking-[0.2em] mb-4">执行异常 / ERROR DETECTED</p>
-                    <div className="whitespace-pre-wrap font-mono text-sm font-bold opacity-100 break-all leading-relaxed">{error}</div>
-                </div>
+             <div className="absolute inset-x-0 top-0 z-20 bg-red-50 border-b border-red-100 p-2 text-xs text-red-600 flex items-center gap-2">
+                <div className="w-1.5 h-1.5 bg-red-500 rounded-full ml-1"></div>
+                <span className="font-mono flex-1 truncate">{error}</span>
+                <button onClick={() => setError(null)}><X className="w-3 h-3" /></button>
              </div>
            )}
 
            {!error && !resultData && !resultXml && !loading && (
-             <div className="h-full flex flex-col items-center justify-center text-text-muted/10 select-none">
-                <Terminal className="w-48 h-48 mb-10 stroke-[0.5px]" />
-                <p className="text-sm font-black tracking-[0.6em] uppercase">等待发送请求以获取响应...</p>
+             <div className="h-full flex flex-col items-center justify-center text-text-muted/30 select-none">
+                <Database className="w-12 h-12 mb-2 stroke-1" />
+                <p className="text-xs font-medium uppercase tracking-widest">Ready to Query</p>
              </div>
            )}
 
-           {(resultData || resultXml) && (
-               <div className="h-full w-full">
-                   {activeTab === 'json' && resultData && (
-                       <div className="p-16">
-                            <div className="flex items-center justify-between mb-10 pb-6 border-b-2 border-border">
-                                <h3 className="text-sm font-black text-text-main flex items-center gap-4 uppercase tracking-[0.25em]">
-                                    <FileJson className="w-6 h-6 text-brand" /> 结构化 JSON 响应内容
-                                </h3>
-                                {resultData['@odata.count'] && <span className="bg-brand text-brand-fg px-5 py-2 rounded-2xl text-xs font-black shadow-lg">总条数: {resultData['@odata.count']}</span>}
-                            </div>
-                            <JsonNode value={resultData} />
-                       </div>
-                   )}
+           <div className={`h-full w-full overflow-auto ${(resultData || resultXml) ? 'block' : 'hidden'}`}>
+                {activeTab === 'json' && resultData && (
+                    <div className="p-4">
+                        <JsonNode value={resultData} />
+                    </div>
+                )}
 
-                   {activeTab === 'table' && resultData && (
-                       <div className="h-full flex flex-col">
-                            {drillStack.length > 0 && (
-                                <div className="flex items-center gap-4 p-6 bg-brand text-brand-fg text-xs font-black uppercase tracking-widest sticky top-0 z-20 shadow-xl">
-                                    <button onClick={() => setDrillStack([])} className="bg-white/20 hover:bg-white/40 text-white px-4 py-2 rounded-xl transition-all border border-white/20">
-                                        <ArrowLeft className="w-4 h-4" /> 返回根节点
-                                    </button>
-                                    {drillStack.map((item, idx) => (
-                                        <React.Fragment key={idx}>
-                                            <ChevronRight className="w-5 h-5 opacity-50" />
-                                            <span className="px-4 py-2 bg-white text-brand rounded-xl shadow-sm">{item.title}</span>
-                                        </React.Fragment>
-                                    ))}
-                                </div>
-                            )}
+                {activeTab === 'table' && resultData && (
+                    <div className="h-full flex flex-col">
+                        {drillStack.length > 0 && (
+                            <div className="flex items-center gap-2 p-2 bg-slate-50 border-b border-border text-xs shrink-0">
+                                <button onClick={() => setDrillStack([])} className="hover:bg-slate-200 p-1 rounded transition-colors text-text-sec">
+                                    <ArrowLeft className="w-3.5 h-3.5" />
+                                </button>
+                                <span className="text-text-muted">/</span>
+                                {drillStack.map((item, idx) => (
+                                    <React.Fragment key={idx}>
+                                        <span className="px-1.5 py-0.5 bg-white border border-border rounded text-[10px] font-mono text-brand truncate max-w-[100px]">
+                                            {item.title}
+                                        </span>
+                                        {idx < drillStack.length - 1 && <ChevronRight className="w-3 h-3 text-text-muted" />}
+                                    </React.Fragment>
+                                ))}
+                            </div>
+                        )}
+                        <div className="flex-1 overflow-auto">
                             <DataTable 
                                 data={currentTableData} 
                                 onDrillDown={(k, d) => setDrillStack(prev => [...prev, { title: k, data: d }])} 
                                 columnTypes={drillStack.length === 0 ? rootColumnTypes : undefined}
                             />
-                       </div>
-                   )}
-
-                   {activeTab === 'xml' && resultXml && (
-                        <div className="h-full">
-                            <div className="px-16 py-8 border-b-2 border-border bg-surface text-sm font-black text-text-main flex items-center gap-4 uppercase tracking-[0.25em] sticky top-0 z-10 shadow-md">
-                                <FileCode className="w-6 h-6 text-brand" /> XML 格式源代码预览
-                            </div>
-                            <div className="p-8">
-                                <XmlViewer xmlString={resultXml} />
-                            </div>
                         </div>
-                   )}
-               </div>
-           )}
+                    </div>
+                )}
+
+                {activeTab === 'xml' && resultXml && (
+                    <div className="p-4">
+                        <XmlViewer xmlString={resultXml} />
+                    </div>
+                )}
+           </div>
         </div>
       </div>
     </div>
