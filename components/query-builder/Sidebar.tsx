@@ -69,12 +69,13 @@ const Sidebar: React.FC<SidebarProps> = ({
             <div className="space-y-4">
                 {/* Entity Select */}
                 <Select 
-                    label="Target Entity" 
+                    label="Target Entity"
+                    aria-label="Target Entity"
                     placeholder="Select an entity"
                     variant="bordered"
                     labelPlacement="outside"
                     selectedKeys={selectedSet ? [selectedSet] : []}
-                    onChange={(e) => onSetChange(e.target.value)}
+                    onSelectionChange={(keys) => onSetChange(Array.from(keys)[0] as string)}
                     startContent={<Database className="w-4 h-4 text-default-400" />}
                     classNames={{
                         trigger: "h-10",
@@ -164,6 +165,7 @@ const Sidebar: React.FC<SidebarProps> = ({
                                 onValueChange={onFilterChange}
                                 description="OData filter expression"
                                 classNames={{ input: "font-mono" }}
+                                aria-label="Filter Expression"
                             />
                         </AccordionItem>
 
@@ -181,7 +183,8 @@ const Sidebar: React.FC<SidebarProps> = ({
                                     variant="bordered"
                                     className="flex-1"
                                     selectedKeys={orderBy ? [orderBy] : []}
-                                    onChange={(e) => onOrderByChange(e.target.value)}
+                                    onSelectionChange={(keys) => onOrderByChange(Array.from(keys)[0] as string)}
+                                    aria-label="Sort Column"
                                 >
                                     {currentEntity.properties.map(p => (
                                         <SelectItem key={p.name}>{p.name}</SelectItem>
@@ -199,6 +202,7 @@ const Sidebar: React.FC<SidebarProps> = ({
                                             <span className={className + " text-[8px] font-bold"}>AZ</span>
                                         )
                                     }
+                                    aria-label="Sort Direction"
                                 >
                                 </Switch>
                             </div>
@@ -220,6 +224,7 @@ const Sidebar: React.FC<SidebarProps> = ({
                                     placeholder="All"
                                     value={String(top)}
                                     onValueChange={(v) => onTopChange(v ? Number(v) : '')}
+                                    aria-label="Top"
                                 />
                                 <Input 
                                     type="number" 
@@ -229,12 +234,14 @@ const Sidebar: React.FC<SidebarProps> = ({
                                     placeholder="0"
                                     value={String(skip)}
                                     onValueChange={(v) => onSkipChange(v ? Number(v) : '')}
+                                    aria-label="Skip"
                                 />
                             </div>
                             <Checkbox 
                                 size="sm" 
                                 isSelected={count}
                                 onValueChange={onCountChange}
+                                aria-label="Include Count"
                             >
                                 <span className="text-tiny">Include Count ($inlinecount)</span>
                             </Checkbox>
